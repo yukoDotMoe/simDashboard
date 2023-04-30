@@ -5,15 +5,18 @@ namespace App\Services;
 
 
 use App\Repositories\ActivityRepositoryInterface;
+use App\Repositories\ServiceRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
 class ActivitiesService
 {
     protected $activityRepo;
-    public function __construct(ActivityRepositoryInterface $activityRepo)
+    protected $serviceRepo;
+    public function __construct(ActivityRepositoryInterface $activityRepo, ServiceRepositoryInterface $serviceRepo)
     {
         $this->activityRepo = $activityRepo;
+        $this->serviceRepo = $serviceRepo;
     }
 
     public function getAll()
@@ -52,14 +55,19 @@ class ActivitiesService
         }
     }
 
-    public function create(string $name, string $price)
+    public function create(string $phone, string $networkId, string $country, string $serviceId)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
             $result = $this->activityRepo->create([
-                'ActivityName' => $name,
-                'price' => $price,
-                'status' => 1
+                'uniqueId' => $id,
+                'phone' => $phone,
+                'networkId' => $networkId,
+                'countryCode' => $country,
+                'serviceId' => $serviceId,
+                'status' => 2,
+                'reason' => 'Activity started',
             ]);
             if(!$result)
             {
@@ -72,7 +80,8 @@ class ActivitiesService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
             return [
                 'status' => 1,
-                'data' => 'Created Activity ' . $name
+                'data' => 'Created Activity',
+                'id' => $id
             ];
         } catch (Exception $e)
         {
@@ -184,6 +193,47 @@ class ActivitiesService
             return [
                 'status' => 1,
                 'data' => 'Restored Activity successfully'
+            ];
+        } catch (Exception $e)
+        {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return [
+                'status' => 0,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function fetch(string $requestId)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $activity = $this->activityRepo->find($requestId);
+            if(!$activity)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Request not found');
+                return [
+                    'status' => 0,
+                    'error' => 'Request not found'
+                ];
+            }
+            $service = $this->serviceRepo->find($activity['serviceId']);
+            if(!$service) $service['serviceName'] = 'Deleted Service';
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+            return [
+                'status' => 1,
+                'data' => [
+                    'requestId' => $requestId,
+                    'phoneNumber' => $activity['phone'],
+                    'countryCode' => $activity['countryCode'],
+                    'serviceId' => $activity['serviceId'],
+                    'serviceName' => $service['serviceName'],
+                    'status' => $activity['status'],
+                    'smsContent' => $activity['smsContent'],
+                    'code' => $activity['code'],
+                    'createdTime' => $activity['created_at'],
+                ]
             ];
         } catch (Exception $e)
         {

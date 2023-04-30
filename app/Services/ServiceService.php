@@ -35,7 +35,8 @@ class ServiceService
             {
                 $services[] = [
                     'id' => $service['uniqueId'],
-                    'name' => $service['serviceName']
+                    'name' => $service['serviceName'],
+                    'price' => $service['price'],
                 ];
             }
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
@@ -58,6 +59,7 @@ class ServiceService
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
             $result = $this->serviceRepo->create([
+                'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
                 'serviceName' => $name,
                 'price' => $price,
                 'status' => 1

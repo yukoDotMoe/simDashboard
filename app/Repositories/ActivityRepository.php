@@ -54,4 +54,20 @@ class ActivityRepository implements ActivityRepositoryInterface
         }
         return false;
     }
+
+    public function findByPhone(string $phone)
+    {
+        $result = Activity::where('phone', $phone)->first();
+        return (empty($result) ? false : $result);
+
+    }
+
+    public function findByPhoneAndBusy(string $phone)
+    {
+        $result = Activity::where([
+            ['phone', $phone],
+            ['status', 2]
+        ])->first();
+        return (empty($result) ? false : $result);
+    }
 }

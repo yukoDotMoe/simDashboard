@@ -54,4 +54,10 @@ class NetworkRepository implements NetworkRepositoryInterface
         }
         return false;
     }
+
+    public function findByName(string $name)
+    {
+        $result = Network::where('networkName', $name)->first();
+        return (empty($result) ? false : $result);
+    }
 }

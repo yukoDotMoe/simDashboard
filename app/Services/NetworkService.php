@@ -52,14 +52,14 @@ class NetworkService
         }
     }
 
-    public function create(string $name, string $price)
+    public function create(string $name)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
             $result = $this->networkRepo->create([
+                'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
                 'networkName' => $name,
-                'price' => $price,
-                'status' => 1
+                'status' => 1,
             ]);
             if(!$result)
             {

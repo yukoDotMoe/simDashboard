@@ -15,14 +15,17 @@ class UpdateUsersTable extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->integer('tier');
+            $table->boolean('admin');
             $table->integer('balance');
             $table->string('phoneNumber');
+            $table->string('apiToken');
         });
 
         Schema::create('balancesLog', function (Blueprint $table) {
             $table->id();
             $table->string('uniqueId');
             $table->string('accountId');
+            $table->string('activityId');
             $table->string('oldBalance');
             $table->string('newBalance');
             $table->string('totalChange');

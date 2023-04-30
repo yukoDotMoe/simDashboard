@@ -15,7 +15,10 @@ class SimsRepository implements SimsRepositoryInterface
 
     public function find(string $uniqueId)
     {
-        $result = Sims::where('uniqueId', $uniqueId)->first();
+        $result = Sims::where([
+            ['uniqueId', $uniqueId],
+            ['deleted_at', null]
+        ])->first();
         return (empty($result) ? false : $result);
     }
 
@@ -53,5 +56,20 @@ class SimsRepository implements SimsRepositoryInterface
             return $result;
         }
         return false;
+    }
+
+    public function findByPhone(string $phone)
+    {
+        $result = Sims::where('phone', $phone)->first();
+        return (empty($result) ? false : $result);
+    }
+
+    public function newestPhone()
+    {
+        $result = Sims::where([
+            ['status', 1],
+            ['deleted_at', null]
+        ])->orderBy('updated_at', 'DESC')->first();
+        return (empty($result) ? false : $result);
     }
 }

@@ -54,4 +54,10 @@ class BalanceRepository implements BalanceRepositoryInterface
         }
         return false;
     }
+
+    public function findByActivity(string $uniqueId)
+    {
+        $result = Balance::where('activityId', $uniqueId)->first();
+        return (empty($result) ? false : $result);
+    }
 }

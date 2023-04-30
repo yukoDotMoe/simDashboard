@@ -16,12 +16,13 @@ class SuccessfullyTable extends Migration
         Schema::create('activitiesLog', function (Blueprint $table) {
             $table->id();
             $table->string('uniqueId');
+            $table->string('userid');
             $table->string('phone');
             $table->string('networkId');
             $table->string('countryCode');
             $table->string('serviceId');
-            $table->string('serviceName');
             $table->string('smsContent');
+            $table->string('code');
             $table->string('status');
             $table->string('reason');
             $table->text('metadata');
