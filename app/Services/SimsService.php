@@ -4,6 +4,7 @@
 namespace App\Services;
 
 
+use App\Models\Sims;
 use App\Models\User;
 use App\Repositories\ActivityRepositoryInterface;
 use App\Repositories\NetworkRepositoryInterface;
@@ -61,6 +62,8 @@ class SimsService
                 'status' => 1,
                 'success' => 0,
                 'failed' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
             if(!$result)
             {
@@ -201,6 +204,10 @@ class SimsService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            if ($token != config('simConfig.adminToken')) return [
+                'status' => 0,
+                'error' => 'Unauthorized Access'
+            ];
             $countryCode = substr($phone, 0, 2);
             $phone = substr($phone, 2);
             $phoneData = $this->simsRepo->findByPhone($phone);
@@ -299,11 +306,11 @@ class SimsService
     //    - Create activity log
     // 3. Wait for client to send update then send to user.
 
-    public function basicRent(string $token, string $serviceId)
+    public function rentFunc(string $token, string $phoneNumber, string $serviceId)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $user = User::where('token', $token)->first();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $phoneNumber);
+            $user = User::where('api_token', $token)->first();
 
             if(empty($user))
             {
@@ -324,7 +331,7 @@ class SimsService
                 ];
             }
 
-            $phone = $this->simsRepo->newestPhone();
+            $phone = $this->simsRepo->findByPhone($phoneNumber);
             if(!$phone)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - No phone number available');
@@ -333,17 +340,32 @@ class SimsService
                     'error' => 'No phone number available'
                 ];
             }
+            if ($phone['status'] != 1)
+            {
+                return [
+                    'status' => 0,
+                    'error' => 'Phone number not available'
+                ];    
+            }
+            
+            DB::beginTransaction();
+            // Hold user balance
+            $holdBalance = $this->balanceService->subtractBalance($user->id, $service['price'], true);
+            DB::commit();
+            if($holdBalance['status'] == 0)
+            {
+                DB::rollBack();
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $holdBalance['error']);
+                return [
+                    'status' => 0,
+                    'error' => $holdBalance['error']
+                ];
+            }
+
             DB::beginTransaction();
             // Change status to busy
             $updatePhone = $this->update($phone['uniqueId'], ['status' => 2]);
-
-            // Create request for easy working
-            $createRequest = $this->activityService->create($phone['phone'], $phone['networkId'], $phone['countryCode'], $serviceId);
-
-            // Hold user balance
-            $holdBalance = $this->balanceService->subtractBalance($user->id, $createRequest['id'], $service['price'], true);
             DB::commit();
-
             if(!$updatePhone)
             {
                 DB::rollBack();
@@ -354,23 +376,17 @@ class SimsService
                 ];
             }
 
-            if(!$createRequest)
+            DB::beginTransaction();
+            // Create request for easy working
+            $createRequest = $this->activityService->create($user->id, $phone['phone'], $phone['networkId'], $phone['countryCode'], $serviceId, $holdBalance['id']);
+            DB::commit();
+            if($createRequest['status'] == 0)
             {
                 DB::rollBack();
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot start request');
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $createRequest['error']);
                 return [
                     'status' => 0,
-                    'error' => 'Cannot start request'
-                ];
-            }
-
-            if($holdBalance)
-            {
-                DB::rollBack();
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot update balance');
-                return [
-                    'status' => 0,
-                    'error' => 'Cannot update balance'
+                    'error' => $createRequest['error']
                 ];
             }
 
@@ -387,6 +403,136 @@ class SimsService
         } catch (Exception $e)
         {
             DB::rollBack();
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return [
+                'status' => 0,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function basicRent(string $token, string $serviceId, string $phoneNumber = null)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            if (!empty($phoneNumber))
+            {
+                $phone = $this->simsRepo->findByPhone($phoneNumber);
+                if(!$phone)
+                {
+                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Phone not found');
+                    return [
+                        'status' => 0,
+                        'error' => 'Phone not found'
+                    ];
+                }
+            }else{
+                $phone = $this->simsRepo->newestPhone();
+            }
+            $result = $this->rentFunc($token, $phone['phone'], $serviceId);
+            if($result['status'] == 0)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - '. $result['error']);
+                return [
+                    'status' => 0,
+                    'error' => $result['error']
+                ];
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+            return [
+                'status' => 1,
+                'data' => $result['data']
+            ];
+        } catch (Exception $e)
+        {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return [
+                'status' => 0,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function networkRent(string $token, string $serviceId, string $network)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $network = $this->networkRepo->find($network);
+            if(!$network)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Network not found');
+                return [
+                    'status' => 0,
+                    'error' => 'Network not found'
+                ];
+            }
+            $phone = Sims::where([
+                ['status', 1],
+                ['networkId', $network['uniqueId']]
+            ])->first();
+            if(!$phone)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - No phone number available');
+                return [
+                    'status' => 0,
+                    'error' => 'No phone number available'
+                ];
+            }
+            $result = $this->rentFunc($token, $phone['phone'], $serviceId);
+            if($result['status'] == 0)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - '. $result['error']);
+                return [
+                    'status' => 0,
+                    'error' => $result['error']
+                ];
+            }
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+            return [
+                'status' => 1,
+                'data' => $result['data']
+            ];
+        } catch (Exception $e)
+        {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return [
+                'status' => 0,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function rentStartWith(string $token, string $serviceId, string $number, bool $include = true)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $dbQuery = [
+                ['status', 1],
+            ];
+            if ($include)
+            {
+                $dbQuery[] = ['phone', 'LIKE', $number . '%'];
+            }else{
+                $dbQuery[] = ['phone', 'NOT LIKE', $number . '%'];
+            }
+            $phone = Sims::where($dbQuery)->first();
+            $result = $this->rentFunc($token, $phone['phone'], $serviceId);
+            if($result['status'] == 0)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - '. $result['error']);
+                return [
+                    'status' => 0,
+                    'error' => $result['error']
+                ];
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+            return [
+                'status' => 1,
+                'data' => $result['data']
+            ];
+        } catch (Exception $e)
+        {
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
             return [
                 'status' => 0,

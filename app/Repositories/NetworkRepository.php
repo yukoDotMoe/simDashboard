@@ -3,7 +3,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Service;
+use App\Models\Network;
 
 class NetworkRepository implements NetworkRepositoryInterface
 {

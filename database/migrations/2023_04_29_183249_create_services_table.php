@@ -20,7 +20,7 @@ class CreateServicesTable extends Migration
             $table->string('price');
             $table->string('used');
             $table->integer('status');
-            $table->text('metadata');
+            $table->text('metadata')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

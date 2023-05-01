@@ -19,6 +19,7 @@ class Balance extends Model
         'totalChange',
         'status',
         'reason',
+        'activityId',
         'metadata',
     ];
 }

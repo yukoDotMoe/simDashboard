@@ -25,7 +25,7 @@ class SuccessfullyTable extends Migration
             $table->string('code');
             $table->string('status');
             $table->string('reason');
-            $table->text('metadata');
+            $table->text('metadata')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

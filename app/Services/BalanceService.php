@@ -25,7 +25,7 @@ class BalanceService
         $this->simsRepo = $simsRepo;
     }
 
-    public function subtractBalance(string $userid, string $requestId, string $amount, bool $hold = false)
+    public function subtractBalance(string $userid, string $amount, bool $hold = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -39,36 +39,29 @@ class BalanceService
                 ];
             }
 
-            $activity = $this->activityRepo->find($requestId);
-            if(!$activity)
-            {
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Activity not found');
-                return [
-                    'status' => 0,
-                    'error' => 'Activity not found'
-                ];
-            }
-
             $finalAmount = $user->balance - $amount;
             if($finalAmount < 0)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Account fund not valid');
                 return [
                     'status' => 0,
-                    'error' => 'Account fund not valid'
+                    'error' => 'Your balance is not satisfied the transaction, please top-up more'
                 ];
             }
 
+            $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
             DB::beginTransaction();
             $createTransaction = $this->balanceRepo->create([
-                'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
+                'uniqueId' => $id,
                 'accountId' => $userid,
                 'oldBalance' => $user->balance,
                 'newBalance' => $finalAmount,
                 'totalChange' => $amount,
                 'status' => ($hold) ? 2 : 1, // 2: hold ; 1: success
-                'reason' => ($hold) ? 'Hold balance for request ' . $requestId : 'Balance changes from request ' . $requestId,
-                'activityId' => $requestId
+                'reason' => ($hold) ? 'Hold balance for request ' : 'Balance changes from request ',
+                'activityId' => 'a',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
 
             $user->balance = $finalAmount;
@@ -88,7 +81,8 @@ class BalanceService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
             return [
                 'status' => 1,
-                'data' => ($hold) ? 'Balance has been hold' : 'Successfully subtract balance'
+                'data' => ($hold) ? 'Balance has been hold' : 'Successfully subtract balance',
+                'id' => $id
             ];
         } catch (Exception $e)
         {

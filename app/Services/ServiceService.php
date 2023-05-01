@@ -62,7 +62,9 @@ class ServiceService
                 'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
                 'serviceName' => $name,
                 'price' => $price,
-                'status' => 1
+                'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
             if(!$result)
             {

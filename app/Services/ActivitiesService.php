@@ -5,18 +5,22 @@ namespace App\Services;
 
 
 use App\Repositories\ActivityRepositoryInterface;
+use App\Repositories\BalanceRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use DB;
 
 class ActivitiesService
 {
     protected $activityRepo;
     protected $serviceRepo;
-    public function __construct(ActivityRepositoryInterface $activityRepo, ServiceRepositoryInterface $serviceRepo)
+    protected $balanceRepo;
+    public function __construct(ActivityRepositoryInterface $activityRepo, ServiceRepositoryInterface $serviceRepo, BalanceRepositoryInterface $balanceRepo)
     {
         $this->activityRepo = $activityRepo;
         $this->serviceRepo = $serviceRepo;
+        $this->balanceRepo = $balanceRepo;
     }
 
     public function getAll()
@@ -55,12 +59,14 @@ class ActivitiesService
         }
     }
 
-    public function create(string $phone, string $networkId, string $country, string $serviceId)
+    public function create(string $userid, string $phone, string $networkId, string $country, string $serviceId, string $balanceId)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
             $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+            DB::beginTransaction();
             $result = $this->activityRepo->create([
+                'userid' => $userid,
                 'uniqueId' => $id,
                 'phone' => $phone,
                 'networkId' => $networkId,
@@ -68,13 +74,31 @@ class ActivitiesService
                 'serviceId' => $serviceId,
                 'status' => 2,
                 'reason' => 'Activity started',
+                'smsContent' => ' ',
+                'code' => ' ',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
+            DB::commit();
             if(!$result)
             {
+                DB::rollBack();
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - end - error - Cannot create Activity');
                 return [
                     'status' => 0,
                     'error' => 'Cannot create Activity'
+                ];
+            }
+            DB::beginTransaction();
+            $balanceLog = $this->balanceRepo->update($balanceId, ['activityId' => $id]);
+            DB::commit();
+            if(!$balanceLog)
+            {
+                DB::rollBack();
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update transaction');
+                return [
+                    'status' => 0,
+                    'error' => 'Failed to update transaction'
                 ];
             }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
@@ -85,7 +109,8 @@ class ActivitiesService
             ];
         } catch (Exception $e)
         {
-            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            DB::rollBack();
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine() . ' - ' . $e->getMessage());
             return [
                 'status' => 0,
                 'error' => $e->getMessage()

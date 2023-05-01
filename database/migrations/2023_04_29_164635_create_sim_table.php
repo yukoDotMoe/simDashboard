@@ -22,7 +22,7 @@ class CreateSimTable extends Migration
             $table->integer('status');
             $table->integer('success');
             $table->integer('failed');
-            $table->text('metadata');
+            $table->text('metadata')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -32,7 +32,7 @@ class CreateSimTable extends Migration
             $table->string('uniqueId');
             $table->string('networkName');
             $table->integer('status');
-            $table->text('metadata');
+            $table->text('metadata')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

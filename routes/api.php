@@ -13,7 +13,12 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+Route::group(['middleware' => ['token']], function (){
+    Route::get('/user/info', [App\Http\Controllers\UsersController::class, 'accountInfo']);
+    Route::get('/sim/services', [App\Http\Controllers\ServiceController::class, 'getAll']);
+    Route::get('/sim/networks', [App\Http\Controllers\NetworkController::class, 'getAll']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    Route::get('/sim/rent', [App\Http\Controllers\SimController::class, 'userRent']);
+
+    Route::get('/updateSim', [App\Http\Controllers\SimController::class, 'updateSimClient']);
 });

@@ -14,11 +14,11 @@ class UpdateUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('tier');
-            $table->boolean('admin');
-            $table->integer('balance');
-            $table->string('phoneNumber');
-            $table->string('apiToken');
+            $table->integer('tier')->default(0);
+            $table->boolean('admin')->default(false);
+            $table->integer('balance')->default(0);
+            $table->string('phoneNumber')->nullable();
+            $table->string('api_token', 80)->unique()->nullable()->default(null);
         });
 
         Schema::create('balancesLog', function (Blueprint $table) {
@@ -31,7 +31,7 @@ class UpdateUsersTable extends Migration
             $table->string('totalChange');
             $table->integer('status');
             $table->string('reason');
-            $table->text('metadata');
+            $table->text('metadata')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

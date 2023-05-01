@@ -60,6 +60,8 @@ class NetworkService
                 'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
                 'networkName' => $name,
                 'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
             if(!$result)
             {

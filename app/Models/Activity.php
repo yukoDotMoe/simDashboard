@@ -13,12 +13,14 @@ class Activity extends Model
 
     protected $fillable = [
         'uniqueId',
+        'userid',
         'phone',
         'networkId',
         'countryCode',
         'serviceId',
         'serviceName',
         'smsContent',
+        'code',
         'status',
         'reason',
         'metadata',
