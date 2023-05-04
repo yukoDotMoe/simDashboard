@@ -3,10 +3,21 @@
 
 namespace App\Repositories;
 
+use App\Models\Network;
 use App\Models\Sims;
 
 class SimsRepository implements SimsRepositoryInterface
 {
+    protected function getActiveNetwork()
+    {
+        $result = Network::where('status', 1)->get();
+        $returnFinal = [];
+        foreach ($result as $network)
+        {
+            $returnFinal[] = $network['uniqueId'];
+        }
+        return $returnFinal;
+    }
     public function all()
     {
         $result = Sims::all();
@@ -16,8 +27,7 @@ class SimsRepository implements SimsRepositoryInterface
     public function find(string $uniqueId)
     {
         $result = Sims::where([
-            ['uniqueId', $uniqueId],
-            ['deleted_at', null]
+            ['uniqueId', $uniqueId]
         ])->first();
         return (empty($result) ? false : $result);
     }
@@ -69,7 +79,7 @@ class SimsRepository implements SimsRepositoryInterface
         $result = Sims::where([
             ['status', 1],
             ['deleted_at', null]
-        ])->orderBy('updated_at', 'DESC')->first();
+        ])->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'DESC')->first();
         return (empty($result) ? false : $result);
     }
 }

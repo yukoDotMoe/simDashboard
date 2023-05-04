@@ -24,5 +24,6 @@ class Activity extends Model
         'status',
         'reason',
         'metadata',
+        'customRent'
     ];
 }

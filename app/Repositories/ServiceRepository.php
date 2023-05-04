@@ -54,4 +54,10 @@ class ServiceRepository implements ServiceRepositoryInterface
         }
         return false;
     }
+
+    public function allActive()
+    {
+        $result = Service::where('status', 1)->get();
+        return (empty($result) ? false : $result);
+    }
 }

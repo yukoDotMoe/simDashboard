@@ -7,9 +7,14 @@ use App\Models\Balance;
 
 class BalanceRepository implements BalanceRepositoryInterface
 {
-    public function all()
+    public function all(string $userid = null)
     {
-        $result = Balance::all();
+        if (!empty($userid))
+        {
+            $result = Balance::where('accountId', $userid)->get();
+        }else{
+            $result = Balance::all();
+        }
         return (empty($result) ? false : $result);
     }
 

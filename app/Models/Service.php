@@ -16,5 +16,7 @@ class Service extends Model
         'used',
         'status',
         'metadata',
+        'price',
+        'used'
     ];
 }

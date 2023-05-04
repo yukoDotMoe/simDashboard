@@ -11,6 +11,7 @@ use App\Repositories\SimsRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use DB;
+use Pusher\Pusher;
 
 class BalanceService
 {
@@ -57,9 +58,10 @@ class BalanceService
                 'oldBalance' => $user->balance,
                 'newBalance' => $finalAmount,
                 'totalChange' => $amount,
-                'status' => ($hold) ? 2 : 1, // 2: hold ; 1: success
+                'status' => 1, // 2: hold ; 1: success
                 'reason' => ($hold) ? 'Hold balance for request ' : 'Balance changes from request ',
                 'activityId' => 'a',
+                'type' => '-',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
@@ -157,12 +159,27 @@ class BalanceService
             DB::beginTransaction();
             if ($activity['status'] > 1) // activity still not finish
             {
-                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 0]); // Changed to 'refund' status
+                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 0, 'reason' => 'Refunded due to exceptions']); // Changed to 'refund' status
+                DB::beginTransaction();
+                $activityUpdate = $this->activityRepo->update($requestId, ['status' => 0, 'reason' => 'Failed due to timeout']);
+                DB::commit();
 
                 $user->balance = $user->balance + $transaction['totalChange']; // Refund money
                 $user->save();
+
+                if(!$activityUpdate)
+                {
+                    DB::rollBack();
+                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update phone number status');
+                    return [
+                        'status' => 0,
+                        'error' => 'Failed to update phone number status'
+                    ];
+                }
             }else{
-                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 1]); // Changed to 'successfully' status
+                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 1, 'reason' => 'Successfully charged']); // Changed to 'successfully' status
+                $user->totalRent = $user->totalRent++;
+                $user->save();
             }
 
             $updatePhone = $this->simsRepo->update($phone['uniqueId'], ['status' => 1]); // Make phone available

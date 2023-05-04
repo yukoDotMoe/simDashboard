@@ -19,6 +19,7 @@ Route::group(['middleware' => ['token']], function (){
     Route::get('/sim/networks', [App\Http\Controllers\NetworkController::class, 'getAll']);
 
     Route::get('/sim/rent', [App\Http\Controllers\SimController::class, 'userRent']);
+    Route::get('/sim/get', [App\Http\Controllers\SimController::class, 'fetchRequest']);
 
     Route::get('/updateSim', [App\Http\Controllers\SimController::class, 'updateSimClient']);
 });

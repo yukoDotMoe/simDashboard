@@ -54,7 +54,7 @@ class ServiceService
         }
     }
 
-    public function create(string $name, string $price)
+    public function create(string $name, int $price)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -63,6 +63,7 @@ class ServiceService
                 'serviceName' => $name,
                 'price' => $price,
                 'status' => 1,
+                'used' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);

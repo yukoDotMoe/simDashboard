@@ -15,15 +15,16 @@ class SimsTableSeeder extends Seeder
     public function run()
     {
 
-        $limit = 10000;
+        $limit = 50;
 
+        $networks = [123, 321, 213];
         for ($i = 0; $i < $limit; $i++) {
             $bytes = random_bytes(20);
             $bytes2 = random_bytes(20);
             DB::table('sims')->insert([
                 'uniqueId' => substr(bin2hex($bytes), 0, 10),
-                'phone' => rand(1000000, 9999999),
-                'networkId' => substr(bin2hex($bytes2), 0, 10),
+                'phone' => rand(1000000000, 9999999999),
+                'networkId' => $networks[rand(0,2)],
                 'countryCode' => 84,
                 'status' => 1,
                 'success' => 0,

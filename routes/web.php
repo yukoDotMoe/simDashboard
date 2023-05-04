@@ -17,8 +17,42 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
 
 require __DIR__.'/auth.php';
+
+Route::group([
+    'middleware' => ['auth', 'verified'],
+], function () {
+    Route::get('/dashboard', [\App\Http\Controllers\UsersController::class, 'dashboardView'])->name('dashboard');
+
+    Route::get('/basicRent', [\App\Http\Controllers\SimController::class, 'rentView'])->name('basicRent');
+    Route::get('/customRent', [\App\Http\Controllers\SimController::class, 'customRentView'])->name('customRent');
+    Route::post('/rent', [\App\Http\Controllers\SimController::class, 'userRent'])->name('rentFunc');
+    Route::get('/rentHistory', [\App\Http\Controllers\SimController::class, 'rentHistoryView'])->name('rentHistory');
+
+    Route::group([
+        'middleware' => ['admin']
+    ], function (){
+        Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'adminUsersView'])->name('admin.users');
+        Route::post('/admin/users/{id}', [\App\Http\Controllers\AdminController::class, 'getUser'])->name('admin.user');
+        Route::post('/admin/balance/edit', [\App\Http\Controllers\AdminController::class, 'editBal'])->name('admin.userBalance');
+        Route::post('/admin/user/edit', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.userEdit');
+
+        Route::get('/admin/sims', [\App\Http\Controllers\AdminController::class, 'adminSimsView'])->name('admin.sims');
+        Route::post('/admin/sims/{id}', [\App\Http\Controllers\AdminController::class, 'getSim'])->name('admin.sim');
+        Route::post('/admin/phone/{id}', [\App\Http\Controllers\AdminController::class, 'getSimByPhone'])->name('admin.simByPhone');
+        Route::post('/admin/sim/edit', [\App\Http\Controllers\AdminController::class, 'updateSimInfo'])->name('admin.simEdit');
+
+        Route::get('/admin/services', [\App\Http\Controllers\AdminController::class, 'adminServicesView'])->name('admin.services');
+        Route::get('/admin/create/service', [\App\Http\Controllers\AdminController::class, 'serviceCreate'])->name('admin.createService');
+        Route::post('/admin/services/{id}', [\App\Http\Controllers\AdminController::class, 'getService'])->name('admin.service');
+        Route::post('/admin/create/service', [\App\Http\Controllers\AdminController::class, 'createService'])->name('admin.createServicePost');
+        Route::post('/admin/service/edit', [\App\Http\Controllers\AdminController::class, 'updateServicesInfo'])->name('admin.serviceEdit');
+
+        Route::get('/admin/networks', [\App\Http\Controllers\AdminController::class, 'adminNetworksView'])->name('admin.networks');
+        Route::get('/admin/create/network', [\App\Http\Controllers\AdminController::class, 'networkCreate'])->name('admin.createNetwork');
+        Route::post('/admin/networks/{id}', [\App\Http\Controllers\AdminController::class, 'getNetwork'])->name('admin.service');
+        Route::post('/admin/create/network', [\App\Http\Controllers\AdminController::class, 'createNetwork'])->name('admin.createNetworkPost');
+        Route::post('/admin/network/edit', [\App\Http\Controllers\AdminController::class, 'updateNetworksInfo'])->name('admin.networkEdit');
+    });
+});

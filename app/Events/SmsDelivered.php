@@ -34,6 +34,6 @@ class SmsDelivered implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('user.'.$this->user->id);
+        return new PrivateChannel('user-flow.'.$this->user->id);
     }
 }

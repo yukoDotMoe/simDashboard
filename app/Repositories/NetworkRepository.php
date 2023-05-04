@@ -60,4 +60,10 @@ class NetworkRepository implements NetworkRepositoryInterface
         $result = Network::where('networkName', $name)->first();
         return (empty($result) ? false : $result);
     }
+
+    public function allActive()
+    {
+        $result = Network::where('status', 1)->get();
+        return (empty($result) ? false : $result);
+    }
 }

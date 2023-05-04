@@ -59,7 +59,7 @@ class ActivitiesService
         }
     }
 
-    public function create(string $userid, string $phone, string $networkId, string $country, string $serviceId, string $balanceId)
+    public function create(string $userid, string $phone, string $networkId, string $country, string $serviceId, string $balanceId, bool $custom = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -74,8 +74,9 @@ class ActivitiesService
                 'serviceId' => $serviceId,
                 'status' => 2,
                 'reason' => 'Activity started',
-                'smsContent' => ' ',
-                'code' => ' ',
+                'smsContent' => null,
+                'code' => null,
+                'customRent' => ($custom) ? 1:0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);

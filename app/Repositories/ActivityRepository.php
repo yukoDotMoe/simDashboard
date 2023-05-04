@@ -7,9 +7,15 @@ use App\Models\Activity;
 
 class ActivityRepository implements ActivityRepositoryInterface
 {
-    public function all()
+    public function all(string $userid = null)
     {
-        $result = Activity::all();
+        if (!empty($userid))
+        {
+            $result = Activity::where('userid', $userid)->get();
+        }else{
+            $result = Activity::all();
+
+        }
         return (empty($result) ? false : $result);
     }
 
@@ -68,6 +74,26 @@ class ActivityRepository implements ActivityRepositoryInterface
             ['phone', $phone],
             ['status', 2]
         ])->first();
+        return (empty($result) ? false : $result);
+    }
+
+    public function fetchUserWorking(string $userid)
+    {
+        $result = Activity::where([
+            ['userid', $userid],
+            ['status', 2],
+            ['customRent', 0]
+        ])->orderBy('created_at', 'DESC')->get();
+        return (empty($result) ? false : $result);
+    }
+
+    public function fetchUserWorkingCustom(string $userid)
+    {
+        $result = Activity::where([
+            ['userid', $userid],
+            ['status', 2],
+            ['customRent', 1]
+        ])->orderBy('created_at', 'DESC')->get();
         return (empty($result) ? false : $result);
     }
 }

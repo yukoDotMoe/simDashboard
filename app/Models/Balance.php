@@ -20,6 +20,7 @@ class Balance extends Model
         'status',
         'reason',
         'activityId',
+        'type',
         'metadata',
     ];
 }

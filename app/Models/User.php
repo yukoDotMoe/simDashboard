@@ -22,7 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'balance',
-        'phoneNumber'
+        'phoneNumber',
+        'api_token',
+        'totalRent'
     ];
 
     /**

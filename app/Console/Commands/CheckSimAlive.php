@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Activity;
 use App\Models\Sims;
+use App\Services\BalanceService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;

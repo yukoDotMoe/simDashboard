@@ -28,7 +28,7 @@ class TokenMiddleware
             $token = $request->query('token');
             if ($token == config('simConfig.adminToken')) return $next($request);
             $user = User::where('api_token', $token)->count();
-            if ($user < 1) return response([
+            if ($user == 0) return response([
                 'status' => 401,
                 'success' => false,
                 'message' => 'Unauthorized Access',

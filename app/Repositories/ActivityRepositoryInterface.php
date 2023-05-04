@@ -6,7 +6,9 @@ namespace App\Repositories;
 
 interface ActivityRepositoryInterface
 {
-    public function all();
+    public function all(string $userid = null);
+    public function fetchUserWorking(string $userid);
+    public function fetchUserWorkingCustom(string $userid);
     public function findByPhone(string $phone);
     public function find(string $uniqueId);
     public function findByPhoneAndBusy(string $phone);
