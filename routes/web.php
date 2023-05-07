@@ -19,16 +19,22 @@ Route::get('/', function () {
 
 
 require __DIR__.'/auth.php';
+Route::get('/register', function () {
+    return redirect('/');
+});
 
 Route::group([
-    'middleware' => ['auth', 'verified'],
+    'middleware' => ['auth', 'verified', 'vendor'],
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\UsersController::class, 'dashboardView'])->name('dashboard');
+    Route::get('/apiDocs', [\App\Http\Controllers\UsersController::class, 'apiDoc'])->name('apiDocs');
 
     Route::get('/basicRent', [\App\Http\Controllers\SimController::class, 'rentView'])->name('basicRent');
     Route::get('/customRent', [\App\Http\Controllers\SimController::class, 'customRentView'])->name('customRent');
     Route::post('/rent', [\App\Http\Controllers\SimController::class, 'userRent'])->name('rentFunc');
     Route::get('/rentHistory', [\App\Http\Controllers\SimController::class, 'rentHistoryView'])->name('rentHistory');
+
+    Route::post('/resetToken', [\App\Http\Controllers\UsersController::class, 'resetToken'])->name('resetToken');
 
     Route::group([
         'middleware' => ['admin']
@@ -54,5 +60,9 @@ Route::group([
         Route::post('/admin/networks/{id}', [\App\Http\Controllers\AdminController::class, 'getNetwork'])->name('admin.service');
         Route::post('/admin/create/network', [\App\Http\Controllers\AdminController::class, 'createNetwork'])->name('admin.createNetworkPost');
         Route::post('/admin/network/edit', [\App\Http\Controllers\AdminController::class, 'updateNetworksInfo'])->name('admin.networkEdit');
+
+        Route::get('/admin/dashboard', [\App\Http\Controllers\AdminController::class, 'adminDashboardView'])->name('admin.dashboard');
+        Route::post('/admin/api/update', [\App\Http\Controllers\AdminController::class, 'handleApiChange'])->name('admin.apiUpdate');
+        Route::post('/admin/filter', [\App\Http\Controllers\AdminController::class, 'dashboardFilter'])->name('admin.filter');
     });
 });

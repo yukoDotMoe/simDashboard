@@ -15,20 +15,11 @@ use Auth;
 class UsersController extends Controller
 {
     protected $customerService;
-    public function __construct(CustomerService $customerService)
+    protected $apiService;
+    public function __construct(CustomerService $customerService, ApiService $apiService)
     {
         $this->customerService = $customerService;
-    }
-
-    public function update(Request $request)
-    {
-        $token = Str::random(80);
-
-        $request->user()->forceFill([
-            'api_token' => hash('sha256', $token),
-        ])->save();
-
-        return ['token' => $token];
+        $this->apiService = $apiService;
     }
 
     public function dashboardView()
@@ -60,6 +51,45 @@ class UsersController extends Controller
             return response()->json(
                 ApiService::returnResult(
                     ['balance' => $result['data']]
+                )
+            );
+        } catch (Exception $e)
+        {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function apiDoc()
+    {
+        $result = $this->apiService->getDoc();
+        if ($result['status'] == 0 ) abort(502);
+        return view('api', ['data' => $result['data']]);
+    }
+
+    public function resetToken()
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $result = $this->apiService->updateToken();
+            if($result['status'] == 0)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                return [
+                    'status' => 0,
+                    'error' => $result['error']
+                ];
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+            return response()->json(
+                ApiService::returnResult(
+                    ['token' => $result['token']]
                 )
             );
         } catch (Exception $e)

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title')
-    Custom Rent
+    Tạo Nhà Mạng
 @endsection
 
 @section('content')

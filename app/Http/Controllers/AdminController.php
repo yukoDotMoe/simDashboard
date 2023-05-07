@@ -19,11 +19,19 @@ class AdminController extends Controller
     protected $customerService;
     protected $serviceService;
     protected $networkService;
-    public function __construct(CustomerService $customerService, ServiceService $serviceService, NetworkService $networkService)
+    protected $apiService;
+    public function __construct(CustomerService $customerService, ServiceService $serviceService, NetworkService $networkService, ApiService $apiService)
     {
         $this->customerService = $customerService;
         $this->networkService = $networkService;
         $this->serviceService = $serviceService;
+        $this->apiService = $apiService;
+    }
+    public function adminDashboardView()
+    {
+        $result = $this->customerService->adminDashboardView();
+        if ($result['status'] == 0 ) abort(502);
+        return view('admin.dashboard', ['data' => $result['data']]);
     }
     public function adminUsersView()
     {
@@ -343,6 +351,67 @@ class AdminController extends Controller
             }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult(['result' => $result['data']]));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function handleApiChange(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $content = $request->apiContent;
+            $result = $this->apiService->updateApiDoc($content);
+            if ($result['status'] == 0) {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult(['result' => $result['data']]));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function dashboardFilter(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $start = $request->startDate;
+            $end = $request->endDate;
+            $result = $this->customerService->dashboardFilter($start, $end);
+            if ($result['status'] == 0) {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
         } catch (Exception $e) {
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
             return response()->json(

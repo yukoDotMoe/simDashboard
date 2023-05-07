@@ -30,7 +30,7 @@ class SimController extends Controller
                 'network' => 'nullable|string',
                 'prefix' => 'nullable|min:2|max:2|integer',
                 'Eprefix' => 'nullable|min:2|max:2|integer',
-                'number' => 'nullable|min:10|max:1|integer',
+                'number' => 'nullable|min:10|max:10|integer',
             ]);
 
             if ($validator->fails()) {
@@ -97,43 +97,31 @@ class SimController extends Controller
     public function updateSimClient(Request $request)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $validator = Validator::make($request->all(), [
-                'phone' => 'required|integer|min:10',
-                'network' => 'required|string',
-                'content' => 'nullable|string',
-                'code' => 'nullable|string',
-            ]);
-
-            if ($validator->fails()) {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            if ($request->has('token')) {
+                $user = User::where('api_token', $request->query('token'))->first();
+            }else{
                 return response()->json(
                     ApiService::returnResult(
-                        $validator->errors()->toArray(),
+                        [],
                         415,
-                        'Invalid information'
+                        'Missing token, please add it to the url as query string.'
                     )
                 );
             }
-            $content = ($request->has('content')) ? $request->input('content') : null;
-            $code = ($request->has('code')) ? $request->input('code') : null;
-            $result = $this->simsService->handleClientRequest(
-                $request->query('token'),
-                $request->query('phone'),
-                $request->query('network'),
-                $content,
-                $code
-            );
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
-            if($result['status'] == 0)
+            if (!$user['admin'] || $user['tier'] < 10)
             {
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
-                return [
-                    'status' => 0,
-                    'error' => $result['error']
-                ];
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        401,
+                        'Invalid access'
+                    )
+                );
             }
+            $result = $this->simsService->handleClientRequest($request->getContent(), $user['tier'] > 10, $user['id']);
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
-            return response()->json(ApiService::returnResult(['result' => $result['data']]));
+            return response()->json(ApiService::returnResult(['result' => $result]));
         } catch (Exception $e)
         {
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());

@@ -20,6 +20,6 @@ Route::group(['middleware' => ['token']], function (){
 
     Route::get('/sim/rent', [App\Http\Controllers\SimController::class, 'userRent']);
     Route::get('/sim/get', [App\Http\Controllers\SimController::class, 'fetchRequest']);
-
-    Route::get('/updateSim', [App\Http\Controllers\SimController::class, 'updateSimClient']);
 });
+
+Route::post('/updateSim', [App\Http\Controllers\SimController::class, 'updateSimClient']);

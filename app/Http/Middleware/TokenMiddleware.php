@@ -27,11 +27,11 @@ class TokenMiddleware
         }else{
             $token = $request->query('token');
             if ($token == config('simConfig.adminToken')) return $next($request);
-            $user = User::where('api_token', $token)->count();
-            if ($user == 0) return response([
+            $user = User::where('api_token', $token)->get();
+            if (count($user) == 0 || $user['tier'] > 10) return response([
                 'status' => 401,
                 'success' => false,
-                'message' => 'Unauthorized Access',
+                'message' => 'You cannot use this function as an vendor',
             ], 401);
         }
         return $next($request);

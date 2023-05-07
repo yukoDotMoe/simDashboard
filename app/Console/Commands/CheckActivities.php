@@ -47,7 +47,7 @@ class CheckActivities extends Command
     {
         try {
             $activities = Activity::where([
-                ['updated_at', '<', Carbon::now()->subMinutes(7)],
+                ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT'))],
                 ['status', 2]
             ])->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . count($activities));
@@ -92,8 +92,9 @@ class CheckActivities extends Command
                     return 0;
                 }
 
-                $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1]); // Make phone available
-
+                $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
+                $transaction->status = 5;
+                $transaction->save();
                 $data = [
                     'uniqueId' => $activity['uniqueId'],
                     'status' => 0

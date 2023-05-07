@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title')
-    Custom Rent
+    Danh Sách Dịch Vụ
 @endsection
 
 @section('content')
@@ -226,7 +226,6 @@
                     url: `{{ route('admin.serviceEdit') }}?id=${simId}&delete=1`,
                     cache: false,
                     success: function (data) {
-                        console.log(data)
                         if(data.status > 200)
                         {
                             return vt.error(data.message, {

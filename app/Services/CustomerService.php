@@ -4,6 +4,7 @@
 namespace App\Services;
 
 
+use App\Models\Activity;
 use App\Models\Balance;
 use App\Models\Network;
 use App\Models\Service;
@@ -11,6 +12,7 @@ use App\Models\Sims;
 use App\Models\User;
 use App\Repositories\BalanceRepositoryInterface;
 use App\Repositories\SimsRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use DB;
@@ -20,10 +22,12 @@ class CustomerService
 {
     protected $balanceRepo;
     protected $simsRepo;
-    public function __construct(BalanceRepositoryInterface $balanceRepo, SimsRepositoryInterface $simsRepo)
+    protected $apiService;
+    public function __construct(BalanceRepositoryInterface $balanceRepo, SimsRepositoryInterface $simsRepo, ApiService $apiService)
     {
         $this->balanceRepo = $balanceRepo;
         $this->simsRepo = $simsRepo;
+        $this->apiService = $apiService;
     }
     public function getBalance(int $userid)
     {
@@ -91,6 +95,115 @@ class CustomerService
         }
     }
 
+    public function dashboardFilter($startDate, $endDate)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
+            $users = User::all();
+
+            $transactions = Balance::leftJoin('activitieslog','balanceslog.activityId','=','activitieslog.uniqueId')
+                ->whereDate('balanceslog.created_at','<=',$end)
+                ->whereDate('balanceslog.created_at','>=',$start)
+                ->leftJoin('services', 'services.uniqueId', '=', 'activitieslog.serviceId')
+                ->select(
+                    'balanceslog.uniqueId',
+                    'balanceslog.accountId',
+                    'balanceslog.activityId',
+                    'balanceslog.oldBalance',
+                    'balanceslog.newBalance',
+                    'balanceslog.totalChange',
+                    'balanceslog.status',
+                    'balanceslog.type',
+                    'balanceslog.created_at',
+                    'activitieslog.serviceId',
+                    'services.serviceName'
+                )
+                ->orderBy('balanceslog.created_at', 'desc')
+                ->get()->transform(function ($item) {
+                    return [
+                        'id' => $item['uniqueId'],
+                        'userid' => $item['accountId'],
+                        'serviceName' => $item['serviceName'] ?? null,
+                        'old' => $item['oldBalance'],
+                        'new' => $item['newBalance'],
+                        'amount' => $item['totalChange'],
+                        'status' => $item['status'],
+                        'date' => $item['created_at'],
+                        'type' => ($item['status'] == 3) ? 'topup' : ($item['type'] == '+' ? 'plus' : 'minus'),
+                        'typeText' => $item['type']
+                    ];
+                });
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => [
+                    'users' => $users,
+                    'transactions' => $transactions
+                ]
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    public function adminDashboardView()
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $sims = Sims::where('status', '>', 0)->count();
+            $simsDied = Sims::where('status', 0)->count();
+            $totalSims = Sims::count();
+
+            $users = User::where('tier', '<', 100)->count();
+            $usersBalances = User::where('tier', '<', 100)->sum('balance');
+
+            $activities = Activity::where('status', '>', 0)->count();
+            $activitiesFailed = Activity::where('status', 0)->count();
+
+            $transactions = Balance::where('status', 1)->count();
+
+            $apiDoc = $this->apiService->getDoc();
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => [
+                    'count' => [
+                        'sims' => [
+                            'total' => $totalSims,
+                            'alive' => $sims,
+                            'died' => $simsDied
+                        ],
+                        'users' => [
+                            'normal' => $users,
+                            'balances' => $usersBalances,
+                        ],
+                        'transactions' => [
+                            'normal' => $transactions,
+                        ],
+                        'requests' => [
+                            'normal' => $activities,
+                            'failed' => $activitiesFailed
+                        ]
+                    ],
+                    'apiDoc' => $apiDoc['data']
+                ]
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getMessage());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
     public function adminUsersView()
     {
         try {
@@ -114,7 +227,7 @@ class CustomerService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
-            $sims = Sims::paginate(20);
+            $sims = Sims::orderBy('status', 'DESC')->paginate(20);
             $networks = Network::all();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [

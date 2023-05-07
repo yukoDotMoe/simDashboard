@@ -79,7 +79,7 @@ class SimsRepository implements SimsRepositoryInterface
         $result = Sims::where([
             ['status', 1],
             ['deleted_at', null]
-        ])->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'DESC')->first();
+        ])->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
         return (empty($result) ? false : $result);
     }
 }

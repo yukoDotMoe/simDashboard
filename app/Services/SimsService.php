@@ -201,11 +201,11 @@ class SimsService
         }
     }
     
-    public function create(string $phone, string $countryCode, string $networkName)
+    public function create(string $phone, string $countryCode, string $networkName, bool $vendor = false, string $vendorId = null)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $network = $this->networkRepo->findByName($networkName);
+            $network = $this->networkRepo->findByName(str_replace(' ', '', $networkName));
             if(!$network)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Network not found');
@@ -215,7 +215,7 @@ class SimsService
                 ];
             }
             $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
-            $result = $this->simsRepo->create([
+            $payload = [
                 'uniqueId' => $id,
                 'phone' => $phone,
                 'networkId' => $network['uniqueId'],
@@ -225,7 +225,9 @@ class SimsService
                 'failed' => 0,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            ];
+            if($vendor) $payload['userid'] = $vendorId;
+            $result = $this->simsRepo->create($payload);
             if(!$result)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot create Sim');
@@ -361,106 +363,141 @@ class SimsService
         }
     }
 
-    public function handleClientRequest(string $token, string $phone, string $network, string $content = null, string $code = null)
+    public function handleClientRequest($data, $vendor = false, $vendorId = null)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            if ($token != config('simConfig.adminToken')) return [
-                'status' => 0,
-                'error' => 'Unauthorized Access'
-            ];
-            $phoneData = $this->simsRepo->findByPhone($phone);
-            if (!$phoneData)
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $data);
+//             let assume the data will be:
+//             [
+//                 // For sending heartbeat
+//                  '0237548237' => [
+//                      'code' => null,
+//                      'network' => null
+//                  ],
+//
+//                 // For update code
+//                 '0237548237' => [
+//                     'code' => 123456,
+//                     'network' => null
+//                 ],
+//
+//                 // For create new number (incase that number not found too)
+//                 '0237548237' => [
+//                     'code' => null,
+//                     'network' => 'Viettel'
+//                 ]
+//             ]
+
+            $data = json_decode($data, true);
+            $returnVar = [];
+            foreach ($data as $simNumber => $simData)
             {
-                DB::beginTransaction();
-                $result = $this->create($phone, 84, $network);
-                DB::commit();
-                if($result['status'] == 0)
+                $simNumber = str_replace(' ', '', $simNumber);
+                $phoneData = $this->simsRepo->findByPhone($simNumber);
+                if (!$phoneData)
                 {
-                    DB::rollBack();
-                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
-                    return [
+                    DB::beginTransaction();
+                    $result = $this->create($simNumber, 84, $simData['network'], $vendor, $vendorId);
+                    DB::commit();
+                    if($result['status'] == 0)
+                    {
+                        DB::rollBack();
+                        Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                        $returnVar[$simNumber] = [
+                            'status' => 0,
+                            'error' => $result['error']
+                        ];
+                        continue;
+                    }
+                    Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
+                    $returnVar[$simNumber] = [
+                        'status' => 1,
+                        'data' => 'Successfully added to database.'
+                    ];
+                    continue;
+                }
+
+                if ($vendor && $phoneData['userid'] !== $vendorId)
+                {
+                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - This number are not belong to your vendor');
+                    $returnVar[$simNumber] = [
                         'status' => 0,
-                        'error' => $result['error']
+                        'error' => 'Number not belong to your vendor'
+                    ];
+                    continue;
+                }
+
+                if ($phoneData['status'] > 1)
+                {
+                    $activity = $this->activityRepo->findByPhoneAndBusy($simNumber);
+                    if(!$activity || empty($activity))
+                    {
+                        Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot find activity?');
+                        $returnVar[$simNumber] = [
+                            'status' => 0,
+                            'error' => 'Cannot find activity'
+                        ];
+                        continue;
+                    }
+                    DB::beginTransaction();
+                    $updateActivity = $this->activityService->update($activity['uniqueId'], [
+                        'status' => 1,
+                        'code' => $simData['code'],
+                        'reason' => 'Code successfully returned'
+                    ]);
+                    DB::commit();
+
+                    if(!$updateActivity)
+                    {
+                        DB::rollBack();
+                        Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update activity');
+                        $returnVar[$simNumber] = [
+                            'status' => 0,
+                            'error' => 'Failed to update activity'
+                        ];
+                        continue;
+                    }
+
+                    $this->sendNotify($activity['userid'], [
+                        'uniqueId' => $activity['uniqueId'],
+                        'status' => 1,
+                        'code' => $simData['code']
+                    ]);
+
+                    $service = $this->serviceRepo->find($activity['serviceId']);
+                    $this->serviceRepo->update($activity['serviceId'], ['used' => $service['used']+1]);
+
+                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1]);
+
+                    $user = User::where('id', $activity['userid'])->first();
+                    $user->totalRent = $user->totalRent + 1;
+                    $user->save();
+
+                    $balanceUpdate = $this->balanceService->handleHoldBalance($activity['uniqueId']);
+                    if($balanceUpdate['status'] == 0)
+                    {
+                        DB::rollBack();
+                        Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update balance transaction');
+                        $returnVar[$simNumber] = [
+                            'status' => 0,
+                            'error' => 'Failed to update balance transaction'
+                        ];
+                        continue;
+                    }
+                    $returnVar[$simNumber] = [
+                        'status' => 1,
+                        'data' => 'Successfully return code to request.'
+                    ];
+                }else{
+                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['status' => 1]);
+                    $returnVar[$simNumber] = [
+                        'status' => 1,
+                        'data' => 'Successfully ping the number.'
                     ];
                 }
-                Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
-                return [
-                    'status' => 1,
-                    'data' => 'Sim created',
-                    'id' => $result['id']
-                ];
             }
 
-            if ($phoneData['status'] > 1 && !empty($content))
-            {
-                $activity = $this->activityRepo->findByPhoneAndBusy($phone);
-                if(!$activity)
-                {
-                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot find activity?');
-                    return [
-                        'status' => 0,
-                        'error' => 'Cannot find activity?'
-                    ];
-                }
-
-                DB::beginTransaction();
-                $updateActivity = $this->activityService->update($activity['uniqueId'], [
-                    'status' => 1,
-                    'smsContent' => $content,
-                    'code' => $code,
-                    'reason' => 'Successfully'
-                ]);
-                DB::commit();
-
-                if(!$updateActivity)
-                {
-                    DB::rollBack();
-                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update activity');
-                    return [
-                        'status' => 0,
-                        'error' => 'Failed to update activity'
-                    ];
-                }
-
-                $this->sendNotify($activity['userid'], [
-                    'uniqueId' => $activity['uniqueId'],
-                    'status' => 1,
-                    'content' => $content,
-                    'code' => $code
-                ]);
-
-                $service = $this->serviceRepo->find($activity['serviceId']);
-                $this->serviceRepo->update($activity['serviceId'], ['used' => $service['used']+1]);
-
-                $user = User::where('id', $activity['userid'])->first();
-                $user->totalRent = $user->totalRent + 1;
-                $user->save();
-
-                $balanceUpdate = $this->balanceService->handleHoldBalance($activity['uniqueId']);
-                if($balanceUpdate['status'] == 0)
-                {
-                    DB::rollBack();
-                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update balance transaction');
-                    return [
-                        'status' => 0,
-                        'error' => 'Failed to update balance transaction'
-                    ];
-                }
-
-                $finalResult = [
-                    'status' => 1,
-                    'data' => 'Code returned successfully'
-                ];
-            }else{
-                $finalResult = [
-                    'status' => 1,
-                    'data' => 'All good, phone number seem to be breathing'
-                ];
-            }
-
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
-            return $finalResult;
+            return $returnVar;
         } catch (Exception $e)
         {
             DB::rollBack();

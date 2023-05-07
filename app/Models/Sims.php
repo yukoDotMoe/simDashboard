@@ -20,5 +20,6 @@ class Sims extends Model
         'success',
         'failed',
         'metadata',
+        'userid',
     ];
 }

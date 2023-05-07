@@ -57,7 +57,7 @@ class NetworkRepository implements NetworkRepositoryInterface
 
     public function findByName(string $name)
     {
-        $result = Network::where('networkName', $name)->first();
+        $result = Network::where('networkName', 'like', '%' . $name . '%')->first();
         return (empty($result) ? false : $result);
     }
 

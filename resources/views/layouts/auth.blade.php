@@ -17,10 +17,11 @@
             <div class="items-center justify-center p-6 sm:p-12">
                 <div class="w-full">
                     @yield('content')
-
                 </div>
             </div>
         </div>
+        <small class="text-gray-400 text-center">@ {{ now()->year }} {{ config('app.name', 'Laravel') }}</small>
+
     </div>
 </div>
 </body>
