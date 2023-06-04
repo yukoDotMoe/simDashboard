@@ -97,7 +97,7 @@ class SimController extends Controller
     public function updateSimClient(Request $request)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             if ($request->has('token')) {
                 $user = User::where('api_token', $request->query('token'))->first();
             }else{
@@ -109,7 +109,7 @@ class SimController extends Controller
                     )
                 );
             }
-            if (!$user['admin'] || $user['tier'] < 10)
+            if (!$user['admin'] && $user['tier'] < 10)
             {
                 return response()->json(
                     ApiService::returnResult(
@@ -119,7 +119,7 @@ class SimController extends Controller
                     )
                 );
             }
-            $result = $this->simsService->handleClientRequest($request->getContent(), $user['tier'] > 10, $user['id']);
+            $result = $this->simsService->handleClientRequest($request->getContent(), $user['tier'] >= 10, $user['id']);
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult(['result' => $result]));
         } catch (Exception $e)

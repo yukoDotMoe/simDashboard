@@ -57,6 +57,33 @@
                                id="price" type="number" required />
                     </label>
 
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Khoá SIM sau X lượt dùng</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="useCount" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                          Nhập <strong>-1</strong> để không giới khoá
+                        </span>
+                    </label>
+
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Mở lại SIM sau khi bị khoá (giờ)</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="cooldown" type="number" required />
+                    </label>
+
+                    <label class="block mt-4 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Regex lấy code</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="structure" type="text" required />
+                    </label>
+
+                    <label class="block mt-4 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Kiểm tra cấu trúc</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="checkValid" type="text" required />
+                    </label>
+
                     <button id="serviceBtn" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Lưu thông tin </button>
                 </form>
 
@@ -177,6 +204,10 @@
                 $('#serviceName').text(data.serviceName);
                 $('#serviceId').text(data.uniqueId);
                 $('#price').val(data.price);
+                $('#useCount').val(data.limit);
+                $('#cooldown').val(data.cooldown);
+                $('#structure').val(data.structure);
+                $('#checkValid').val(data.valid);
                 $('#serviceBtn').attr('data-sim',data.id);
                 $(`#status option[value=${data.status}]`).prop('selected', 'selected').change();
 
@@ -187,10 +218,14 @@
                 const simId = $(this).attr('data-sim');
                 const status = $('#status').val();
                 const price = $('#price').val();
+                const limit = $('#useCount').val();
+                const cooldown = $('#cooldown').val();
+                const structure = $('#structure').val();
+                const checkValid = $('#checkValid').val();
 
                 $.ajax({
                     type: "POST",
-                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&status=${status}&price=${price}`,
+                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&status=${status}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}`,
                     cache: false,
                     success: function (data) {
                         console.log(data)

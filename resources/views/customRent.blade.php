@@ -51,7 +51,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                     <th class="px-4 py-3">Phone Number</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3">Code</th>
-                    <th class="px-4 py-3">Content</th>
                     <th class="px-4 py-3">Date</th>
                 </tr>
                 </thead>
@@ -67,7 +66,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm code" id="code"></td>
-                            <td class="px-2 py-3 text-sm content" id="content"> </td>
                             <td class="px-4 py-3 text-sm" id="createdTime"> {{ $task['created_at'] }} </td>
                         </tr>
                     @endforeach
@@ -109,7 +107,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                         <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> ${phone} </td>
                         <td class="px-4 py-3 text-sm" id="status">${waitingBadge}</td>
                         <td class="px-4 py-3 text-sm code" id="code"> </td>
-                        <td class="px-2 py-3 text-sm content" id="content"> </td>
                         <td class="px-4 py-3 text-sm" id="createdTime"> ${time} </td>
                 </tr>
                 `;

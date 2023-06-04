@@ -230,15 +230,19 @@ class AdminController extends Controller
     public function updateServicesInfo(Request $request)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             $uniqueId = $request->query('id');
             if ($request->has('delete'))
             {
-                $result = $this->customerService->updateService($uniqueId, null, null, true);
+                $result = $this->customerService->updateService($uniqueId, null, null, null, null, null, null,true);
             }else{
                 $status = $request->query('status');
                 $price = $request->query('price');
-                $result = $this->customerService->updateService($uniqueId, $status, $price);
+                $limit = $request->query('limit');
+                $cooldown = $request->query('cooldown');
+                $structure = $request->query('structure');
+                $valid = $request->query('valid');
+                $result = $this->customerService->updateService($uniqueId, $status, $price, $limit, $cooldown, $structure, $valid);
             }
 
             if ($result['status'] == 0) {
@@ -270,8 +274,12 @@ class AdminController extends Controller
         try {
             $name = $request->query('name');
             $price = $request->query('price');
+            $limit = $request->query('limit');
+            $cooldown = $request->query('cooldown');
+            $structure = $request->query('structure');
+            $valid = $request->query('valid');
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $name . ' - ' . $price);
-            $result = $this->serviceService->create($name, $price);
+            $result = $this->serviceService->create($name, $price, $limit, $cooldown, $structure, $valid);
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
                 return response()->json(
@@ -424,4 +432,34 @@ class AdminController extends Controller
         }
     }
 
+    public function removeLockedService(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $simId = $request->simId;
+            $lockedServiceId = $request->serviceId;
+            $result = $this->customerService->removeLockedService($simId, $lockedServiceId);
+            if ($result['status'] == 0) {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult(['result' => $result['data']]));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
 }

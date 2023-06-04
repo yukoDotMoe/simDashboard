@@ -58,7 +58,7 @@ class CheckActivities extends Command
                     ['phone', $activity['phone']],
                     ['status', 2]
                 ])->first();
-                if(!$phone || $phone['status'] == 1)
+                if(!$phone)
                 {
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not valid');
                     return 0;

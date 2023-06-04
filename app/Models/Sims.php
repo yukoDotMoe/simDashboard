@@ -21,5 +21,7 @@ class Sims extends Model
         'failed',
         'metadata',
         'userid',
+        'locked_services',
+        'working_services',
     ];
 }

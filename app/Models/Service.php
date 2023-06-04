@@ -17,6 +17,10 @@ class Service extends Model
         'status',
         'metadata',
         'price',
-        'used'
+        'used',
+        'limit',
+        'cooldown',
+        'structure',
+        'valid',
     ];
 }

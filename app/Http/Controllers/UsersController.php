@@ -24,9 +24,14 @@ class UsersController extends Controller
 
     public function dashboardView()
     {
-        $result = $this->customerService->dashboardView();
-        if ($result['status'] == 0 ) abort(502);
-        return view('dashboard', ['data' => $result['data']]);
+        if (Auth::user()->tier >= 10)
+        {
+            return view('vendors.dashboard');
+        }else{
+            $result = $this->customerService->dashboardView();
+            if ($result['status'] == 0 ) abort(502);
+            return view('dashboard', ['data' => $result['data']]);
+        }
     }
 
     public function accountInfo(Request $request)

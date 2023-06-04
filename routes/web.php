@@ -24,7 +24,7 @@ Route::get('/register', function () {
 });
 
 Route::group([
-    'middleware' => ['auth', 'verified', 'vendor'],
+    'middleware' => ['auth', 'verified', 'user'],
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\UsersController::class, 'dashboardView'])->name('dashboard');
     Route::get('/apiDocs', [\App\Http\Controllers\UsersController::class, 'apiDoc'])->name('apiDocs');
@@ -48,6 +48,7 @@ Route::group([
         Route::post('/admin/sims/{id}', [\App\Http\Controllers\AdminController::class, 'getSim'])->name('admin.sim');
         Route::post('/admin/phone/{id}', [\App\Http\Controllers\AdminController::class, 'getSimByPhone'])->name('admin.simByPhone');
         Route::post('/admin/sim/edit', [\App\Http\Controllers\AdminController::class, 'updateSimInfo'])->name('admin.simEdit');
+        Route::post('/admin/sim/removeLockedService', [\App\Http\Controllers\AdminController::class, 'removeLockedService'])->name('admin.removeLockedService');
 
         Route::get('/admin/services', [\App\Http\Controllers\AdminController::class, 'adminServicesView'])->name('admin.services');
         Route::get('/admin/create/service', [\App\Http\Controllers\AdminController::class, 'serviceCreate'])->name('admin.createService');
@@ -65,4 +66,11 @@ Route::group([
         Route::post('/admin/api/update', [\App\Http\Controllers\AdminController::class, 'handleApiChange'])->name('admin.apiUpdate');
         Route::post('/admin/filter', [\App\Http\Controllers\AdminController::class, 'dashboardFilter'])->name('admin.filter');
     });
+});
+
+Route::group([
+    'middleware' => ['auth', 'verified', 'vendor'],
+    'prefix' => 'vendor'
+], function () {
+    Route::get('/dashboard', [\App\Http\Controllers\VendorController::class, 'dashboard'])->name('vendor.dashboard');
 });

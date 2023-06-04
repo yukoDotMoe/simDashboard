@@ -39,7 +39,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                     <th class="px-4 py-3">Phone Number</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3">Code</th>
-                    <th class="px-4 py-3">Content</th>
                     <th class="px-4 py-3">Date</th>
                 </tr>
                 </thead>
@@ -55,7 +54,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm code" id="code"></td>
-                            <td class="px-2 py-3 text-sm content" id="content"> </td>
                             <td class="px-4 py-3 text-sm" id="createdTime"> {{ $task['created_at'] }} </td>
                         </tr>
                     @endforeach
@@ -67,26 +65,26 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
 
 @section('js')
     <script>
-        $( document ).ready(function() {
-            function copyToClipboard(text) {
-                var sampleTextarea = document.createElement("textarea");
-                document.body.appendChild(sampleTextarea);
-                sampleTextarea.value = text; //save main text in it
-                sampleTextarea.select(); //select textarea contenrs
-                document.execCommand("copy");
-                document.body.removeChild(sampleTextarea);
-                vt.success(`Copied "${text}" to your clipboard.`, {
-                    title: "Text copied",
-                    position: "top-right",
-                })
-            }
-
-            $('.code, .phoneNumber').click(function (){
-                const text = $(this).text();
-                if(!text) return false
-                copyToClipboard(text)
+        function copyToClipboard(text) {
+            var sampleTextarea = document.createElement("textarea");
+            document.body.appendChild(sampleTextarea);
+            sampleTextarea.value = text; //save main text in it
+            sampleTextarea.select(); //select textarea contenrs
+            document.execCommand("copy");
+            document.body.removeChild(sampleTextarea);
+            vt.success(`Copied "${text}" to your clipboard.`, {
+                title: "Text copied",
+                position: "top-right",
             })
+        }
 
+        $(document).on('click', '.code, .phoneNumber', function () {
+            const text = $(this).text();
+            if(!text) return false
+            copyToClipboard(text)
+        })
+
+        $( document ).ready(function() {
             function addToTable(id, name, price, phone, time)
             {
                 const table = $('#rentTable');
@@ -97,7 +95,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                         <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> ${phone} </td>
                         <td class="px-4 py-3 text-sm" id="status">${waitingBadge}</td>
                         <td class="px-4 py-3 text-sm code" id="code"> </td>
-                        <td class="px-2 py-3 text-sm content" id="content"> </td>
                         <td class="px-4 py-3 text-sm" id="createdTime"> ${time} </td>
                 </tr>
                 `;
@@ -114,7 +111,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                 const tableRow = $(`tr[id="${data.uniqueId}"]`);
                 tableRow.children('#status').html(successBadge);
                 tableRow.children('#code').text(data.code)
-                tableRow.children('#content').text(data.content)
             });
 
             channel.bind('simFailed', function(data) {

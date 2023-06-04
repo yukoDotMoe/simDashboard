@@ -22,5 +22,6 @@ class Balance extends Model
         'activityId',
         'type',
         'metadata',
+        'handleByVendor',
     ];
 }

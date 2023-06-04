@@ -17,10 +17,10 @@ class VendorMiddleware
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
-        if ($user['tier'] >= 10) return response([
+        if ($user['tier'] < 10) return response([
             'status' => 401,
             'success' => false,
-            'message' => 'You cannot use this function as an vendor',
+            'message' => 'You cannot use this function as an user',
         ], 401);
         return $next($request);
     }

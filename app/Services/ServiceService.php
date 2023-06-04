@@ -54,7 +54,7 @@ class ServiceService
         }
     }
 
-    public function create(string $name, int $price)
+    public function  create(string $name, int $price, int $limit = -1, string $cooldown = null, string $structure, string $valid)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -64,6 +64,10 @@ class ServiceService
                 'price' => $price,
                 'status' => 1,
                 'used' => 0,
+                'limit' => ($limit < 0 ) ? -1 : $limit,
+                'cooldown' => $cooldown,
+                'structure' => $structure,
+                'valid' => $valid,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);

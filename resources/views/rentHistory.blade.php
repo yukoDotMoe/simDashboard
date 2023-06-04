@@ -17,7 +17,6 @@
                     <th class="px-4 py-3">Phone Number</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3">Code</th>
-                    <th class="px-4 py-3">Content</th>
                     <th class="px-4 py-3">Date</th>
                 </tr>
                 </thead>
@@ -47,7 +46,6 @@
                                 @endswitch
                         </td>
                         <td class="px-4 py-3 text-sm code" id="code">{{ $task['code'] }}</td>
-                        <td class="px-2 py-3 text-sm content" id="content">{{ $task['smsContent'] }}</td>
                         <td class="px-4 py-3 text-sm" id="createdTime"> {{ $task['created_at'] }} </td>
                     </tr>
                 @endforeach

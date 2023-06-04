@@ -159,7 +159,7 @@ class BalanceService
             DB::beginTransaction();
             if ($activity['status'] > 1) // activity still not finish
             {
-                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 0, 'reason' => 'Refunded due to exceptions']); // Changed to 'refund' status
+                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 0, 'reason' => 'Refunded due to exceptions', 'handleByVendor' => $activity['handleByVendor'] ?? null]); // Changed to 'refund' status
                 DB::beginTransaction();
                 $activityUpdate = $this->activityRepo->update($requestId, ['status' => 0, 'reason' => 'Failed due to timeout']);
                 DB::commit();
@@ -177,7 +177,7 @@ class BalanceService
                     ];
                 }
             }else{
-                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 1, 'reason' => 'Successfully charged']); // Changed to 'successfully' status
+                $changedTransaction = $this->update($transaction['uniqueId'], ['status' => 1, 'reason' => 'Successfully charged', 'handleByVendor' => $activity['handleByVendor'] ?? null]); // Changed to 'successfully' status
                 $user->totalRent = $user->totalRent++;
                 $user->save();
             }

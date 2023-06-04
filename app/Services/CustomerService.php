@@ -78,7 +78,7 @@ class CustomerService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $transactions = Balance::where([
                 ['accountId', Auth::user()->id]
-            ])->paginate(15);
+            ])->orderBy('created_at', 'DESC')->paginate(15);
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
@@ -381,6 +381,54 @@ class CustomerService
         }
     }
 
+    public function removeLockedService($sim, $service)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $sim . ' - ' . $service);
+            $sim = Sims::where('uniqueId', $sim)->first();
+            if (!$sim || empty($sim))
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not found');
+                return array(
+                    'status' => 0,
+                    'error' => 'Sim not found'
+                );
+            }
+
+            $lockedServices = json_decode($sim['locked_services'], true);
+
+            if (empty($lockedServices[$service]))
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Locked service not found');
+                return array(
+                    'status' => 0,
+                    'error' => 'Locked service not found'
+                );
+            }
+
+            DB::table('sim_activities')->where([
+                ['phoneNumber', $sim['phone']],
+                ['serviceId', $service]
+            ])->update(['deleted_at' => Carbon::now()]);
+
+            unset($lockedServices[$service]);
+            $sim->locked_services = json_encode($lockedServices);
+            $sim->save();
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                "status"=>1,
+                "data"=>"removed successfully :)"
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
     public function updateSim(string $uniqueId, string $status = null, string $network = null, bool $delete = false)
     {
         try {
@@ -408,7 +456,7 @@ class CustomerService
         }
     }
 
-    public function updateService(string $uniqueId, string $status = null, int $price = null, bool $delete = false)
+    public function updateService(string $uniqueId, string $status = null, int $price = null, int $limit, int $cooldown, string $structure, string $valid, bool $delete = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
@@ -419,6 +467,10 @@ class CustomerService
             }else {
                 $service->status = $status;
                 $service->price = $price;
+                $service->limit = $limit;
+                $service->cooldown = $cooldown;
+                $service->structure = $structure;
+                $service->valid = $valid;
                 $service->save();
             }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
