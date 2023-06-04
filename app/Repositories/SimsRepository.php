@@ -140,7 +140,7 @@ class SimsRepository implements SimsRepositoryInterface
                     $gonnaReturn = $this->rotatePhoneNumber($result['phone'], $network); // rotate the number logic here
                 }else{
                     // check if cooldown expired
-                    if (Carbon::parse($currentLocked[$serviceId])->lte(Carbon::now()))
+                    if (Carbon::parse($currentLocked[$serviceId]['cooldown'])->lte(Carbon::now()))
                     {
                         DB::table('sim_activities')->where([
                             ['phoneNumber', $result['phone']],
