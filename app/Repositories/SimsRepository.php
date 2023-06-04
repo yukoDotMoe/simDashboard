@@ -150,7 +150,10 @@ class SimsRepository implements SimsRepositoryInterface
                         unset($currentLocked[$serviceId]);
                         $gonnaReturn = $result;
                     }else{
-                        $currentLocked[$serviceId] = Carbon::now()->addHours($service['cooldown']);
+                        $currentLocked[$serviceId] = [
+                            'name' => $service->serviceName,
+                            'cooldown' => Carbon::now()->addHours($service['cooldown'])
+                        ];
                         $gonnaReturn = $this->rotatePhoneNumber($result['phone'], $network); // rotate the number logic here
                     }
                 }
