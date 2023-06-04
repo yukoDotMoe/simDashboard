@@ -539,7 +539,10 @@ class SimsService
                         'data' => 'Successfully return code to request.'
                     ];
                 }else{
-                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['status' => 1]);
+                    Sims::where([
+                        ['uniqueId', $phoneData['uniqueId']],
+                        ['status', 0]
+                    ])->update(['status' => 1]);
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully ping the number.'

@@ -45,12 +45,14 @@ class CheckActivities extends Command
      */
     public function handle()
     {
+        $out = new \Symfony\Component\Console\Output\ConsoleOutput();
         try {
             $activities = Activity::where([
                 ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT'))],
                 ['status', 2]
             ])->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . count($activities));
+            $out->writeln("[*] Starting checking all working jobs - Found " . count($activities) . " jobs");
 
             foreach ($activities as $activity) {
                 $transaction = Balance::where('activityId', $activity['uniqueId'])->first();
@@ -61,6 +63,7 @@ class CheckActivities extends Command
                 if(!$phone)
                 {
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not valid');
+                    $out->writeln("[!] Number '" . $activity['phone'] . "' not valid. Aborted...");
                     return 0;
                 }
 
@@ -89,6 +92,7 @@ class CheckActivities extends Command
                 {
                     DB::rollBack();
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Failed to update request');
+                    $out->writeln("[!] Sim '" . $activity['phone'] . "' Failed to update job. Aborted...");
                     return 0;
                 }
 
@@ -114,14 +118,15 @@ class CheckActivities extends Command
 
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
                 $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Finish Closing request - ' . $activity['uniqueId']);
-
+                Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Finish Closing request - ' . $activity['uniqueId']);
+                $out->writeln("[%] Finished update job ID '" . $activity['uniqueId'] . "'.");
             }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return 1;
         } catch (Exception $e) {
             DB::rollBack();
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            $out->writeln("[!] Error occurred at line '" . $e->getLine() . "'. Please fix.");
             return 0;
         }
     }
