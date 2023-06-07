@@ -28,9 +28,11 @@ class SimsService
     protected $balanceService;
     protected $serviceRepo;
     protected $activityRepo;
+    protected $networkService;
     public function __construct(
         SimsRepositoryInterface $simsRepo,
         NetworkRepositoryInterface $networkRepo,
+        NetworkService $networkService,
         ActivitiesService $activityService,
         BalanceService $balanceService,
         ServiceRepositoryInterface $serviceRepo,
@@ -43,6 +45,7 @@ class SimsService
         $this->balanceService = $balanceService;
         $this->serviceRepo = $serviceRepo;
         $this->activityRepo = $activityRepo;
+        $this->networkService = $networkService;
     }
 
     protected function sendNotify(string $userid, array $data)
@@ -81,6 +84,7 @@ class SimsService
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $services = $this->serviceRepo->allActive();
+            $networks = $this->networkRepo->allActive();
             $workingTask = $this->activityRepo->fetchUserWorking(Auth::user()->id);
             foreach ($workingTask as $task)
             {
@@ -93,6 +97,7 @@ class SimsService
                 'status' => 1,
                 'data' => [
                     'services' => $services ?? [],
+                    'networks' => $networks ?? [],
                     'workingTask' => $workingTask ?? []
                 ]
             ];
@@ -206,20 +211,11 @@ class SimsService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $network = $this->networkRepo->findByName(str_replace(' ', '', $networkName));
-            if(!$network)
-            {
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Network not found');
-                return [
-                    'status' => 0,
-                    'error' => 'Network not found'
-                ];
-            }
             $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
             $payload = [
                 'uniqueId' => $id,
                 'phone' => $phone,
-                'networkId' => $network['uniqueId'],
+                'networkId' => $networkName,
                 'countryCode' => $countryCode,
                 'status' => 1,
                 'success' => 0,
@@ -364,23 +360,40 @@ class SimsService
         }
     }
 
+    public static function addSimResult($phone, $service, $request, $status, $reason = null)
+    {
+        $table = ($status == 1) ? 'success_records' : 'failed_records';
+        $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+        $result = DB::table($table)->insertGetId([
+            'uniqueId' => $id,
+            'phone' => $phone,
+            'serviceId' => $service,
+            'requestId' => $request,
+            'reason' => $reason,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        return (empty($result)) ? false : $id;
+    }
+
     public function handleClientRequest($data, $vendor = false, $vendorId = null)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $data);
 //             let assume the data will be:
              $test = [
-                // For sending heartbeat
+// For sending heartbeat
 '0237548237' => [
     'code' => null,
-    'network' => null,
+    'network' => 'Viettel',
     'action' => 'heartbeat'
 ],
 
 // For update code
 '0237548237' => [
-    'code' => 123456,
-    'network' => null,
+    'code' => 'noi dung sms',
+    'network' => 'Viettel',
     'action' => 'update'
 ],
 
@@ -409,10 +422,30 @@ class SimsService
                     continue;
                 }
 
+                if (!isset($simData['network']))
+                {
+                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Missing action');
+                    $returnVar[$simNumber] = [
+                        'status' => 0,
+                        'data' => 'Missing network'
+                    ];
+                    continue;
+                }
+
+                $network = Network::where([
+                    ['networkName', $simData['network']]
+                ])->first();
+
+                if (empty($network))
+                {
+                    $createNetwork = $this->networkService->create($simData['network']);
+                    $network = $this->networkRepo->find($createNetwork['uniqueId']);
+                }
+
                 if (!$phoneData && $simData['action'] == 'create')
                 {
                     DB::beginTransaction();
-                    $result = $this->create($simNumber, 84, $simData['network'], $vendor, $vendorId);
+                    $result = $this->create($simNumber, 84, $network['uniqueId'], $vendor, $vendorId);
                     DB::commit();
                     if($result['status'] == 0)
                     {
@@ -435,7 +468,7 @@ class SimsService
                 if ($phoneData['status'] > 1 && $simData['action'] == 'update')
                 {
                     $activity = $this->activityRepo->findByPhoneAndBusy($simNumber);
-                    if(!$activity || empty($activity))
+                    if(empty($activity))
                     {
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot find activity?');
                         $returnVar[$simNumber] = [
@@ -450,13 +483,12 @@ class SimsService
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Content cannot be null');
                         $returnVar[$simNumber] = [
                             'status' => 0,
-                            'error' => 'You cannot provide an empty code'
+                            'error' => 'You cannot provide an empty content'
                         ];
                         continue;
                     }
 
                     $service = $this->serviceRepo->find($activity['serviceId']);
-
                     if (empty($service['valid']) || empty($service['structure']))
                     {
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - This service cannot handle your request right now.');
@@ -467,7 +499,17 @@ class SimsService
                         continue;
                     }
 
-                    if(!preg_match("/{$service['valid']}/i", $simData['code'])) {
+                    // Check the content if the content valid
+                    $arrayToCheckFromDB = preg_split("/\r\n|\n|\r/", $service['valid']);
+                    Log::info(json_encode($arrayToCheckFromDB));
+                    $noValidFound = true;
+                    foreach ($arrayToCheckFromDB as $validContent) {
+                        if (preg_match("/\b$validContent\b/", $simData['code'])) {
+                            $noValidFound = false;
+                            break;
+                        }
+                    }
+                    if ($noValidFound) {
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sms content not valid');
                         $returnVar[$simNumber] = [
                             'status' => 0,
@@ -515,13 +557,14 @@ class SimsService
                         'code' => $extractedCode[0]
                     ]);
 
+                    DB::beginTransaction();
                     $this->serviceRepo->update($activity['serviceId'], ['used' => $service['used']+1]);
-
-                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1]);
+                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1, 'networkId' => $network['uniqueId']]);
 
                     $user = User::where('id', $activity['userid'])->first();
                     $user->totalRent = $user->totalRent + 1;
                     $user->save();
+                    DB::commit();
 
                     $balanceUpdate = $this->balanceService->handleHoldBalance($activity['uniqueId']);
                     if($balanceUpdate['status'] == 0)
@@ -534,6 +577,7 @@ class SimsService
                         ];
                         continue;
                     }
+                    SimsService::addSimResult($simNumber, $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully return code to request.'
@@ -542,7 +586,7 @@ class SimsService
                     Sims::where([
                         ['uniqueId', $phoneData['uniqueId']],
                         ['status', 0]
-                    ])->update(['status' => 1]);
+                    ])->update(['status' => 1, 'networkId' => $network['uniqueId'], 'userid' => $vendorId]);
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully ping the number.'
@@ -689,6 +733,8 @@ class SimsService
                     'phone' => $phone['phone'],
                     'country' => $phone['countryCode'],
                     'balance' => $user->balance - $service['price'],
+                    'price' => $service['price'],
+                    'name' => $service['serviceName'],
                     'requestId' => $createRequest['id'],
                     'createdTime' => date('Y-m-d H:i:s')
                 ],
@@ -704,7 +750,7 @@ class SimsService
         }
     }
 
-    public function basicRent(string $token, string $serviceId, string $phoneNumber = null)
+    public function basicRent(string $token, string $serviceId, string $networkId, string $phoneNumber = null)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -720,7 +766,15 @@ class SimsService
                     ];
                 }
             }else{
-                $phone = $this->simsRepo->newestPhone($serviceId);
+                if ($networkId != 'all')
+                {
+                    $network = Network::where('uniqueId', $networkId)->first();
+                    if (empty($network)) return [
+                        'status' => 0,
+                        'error' => 'Network not found'
+                    ];
+                }
+                $phone = $this->simsRepo->newestPhone($serviceId, $networkId == 'all' ? null : $networkId);
             }
             if (!$phone)
             {

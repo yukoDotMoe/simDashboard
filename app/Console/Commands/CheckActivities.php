@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Balance;
 use App\Models\Sims;
 use App\Models\User;
+use App\Services\SimsService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -96,6 +97,7 @@ class CheckActivities extends Command
                     return 0;
                 }
 
+                SimsService::addSimResult($phone['phone'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
                 $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
                 $transaction->status = 5;
                 $transaction->save();

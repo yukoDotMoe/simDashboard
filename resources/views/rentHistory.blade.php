@@ -12,6 +12,7 @@
             <table class="w-full whitespace-no-wrap">
                 <thead>
                 <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
+                    <th class="px-4 py-3">ID</th>
                     <th class="px-4 py-3">Service</th>
                     <th class="px-4 py-3">Price</th>
                     <th class="px-4 py-3">Phone Number</th>
@@ -23,6 +24,7 @@
                 <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800" id="rentTable">
                 @foreach($data['activities'] as $task)
                     <tr class="text-gray-700 dark:text-gray-400" id="{{ $task['uniqueId'] }}">
+                        <td class="px-4 py-3 text-sm" id="uniqueId"> {{ $task['uniqueId'] }} </td>
                         <td class="px-4 py-3 text-sm" id="serviceName"> {{ $task['serviceName'] }} </td>
                         <td class="px-4 py-3 text-sm" id="servicePrice"> {{ number_format($task['servicePrice'], 0, '', ',') }} </td>
                         <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> {{ $task['phone'] }} </td>

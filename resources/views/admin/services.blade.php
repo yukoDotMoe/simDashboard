@@ -57,20 +57,46 @@
                                id="price" type="number" required />
                     </label>
 
-                    <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Khoá SIM sau X lượt dùng</span>
-                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                               id="useCount" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
-                        <span class="text-xs text-gray-600 dark:text-gray-400">
-                          Nhập <strong>-1</strong> để không giới khoá
-                        </span>
-                    </label>
+                    <div class="flex items-center mb-4">
+                        <input id="checkbox-2" type="checkbox" value="" class="border-2 p-3 rounded-lg w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="checkbox-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Hiển thị phần kiểm tra dựa trên số liệu
+                            <p class="text-xs text-gray-600 dark:text-gray-200">
+                                Không ảnh hưởng khi lưu
+                            </p>
+                        </label>
+                    </div>
 
-                    <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Mở lại SIM sau khi bị khoá (giờ)</span>
-                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                               id="cooldown" type="number" required />
-                    </label>
+                    <div class="border-2 p-3 rounded-lg	hidden" id="valueDiv">
+                        <label class="mb-4 block text-sm">
+                            <p class="text-xs text-gray-600 dark:text-gray-200">
+                                Khoá SIM sử dụng dịch vụ dưa trên điều kiện. Nhập <strong>-1</strong> để <strong>bỏ kiểm tra</strong> phần bạn không muốn dùng.
+                            </p>
+                        </label>
+
+                        <label class="mb-4 block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">Lượt dùng</span>
+                            <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                                   id="useCount" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                        </label>
+
+                        <label class="mb-4 block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">Thành công</span>
+                            <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                                   id="success" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                        </label>
+
+                        <label class="mb-4 block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">Thất bại</span>
+                            <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                                   id="fail" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                        </label>
+
+                        <label class="mb-4 block text-sm">
+                            <span class="text-gray-700 dark:text-gray-400">Mở lại SIM sau khi bị khoá (giờ)</span>
+                            <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                                   min=1 id="cooldown" type="number" required />
+                        </label>
+                    </div>
 
                     <label class="block mt-4 text-sm">
                         <span class="text-gray-700 dark:text-gray-400">Regex lấy code</span>
@@ -80,8 +106,8 @@
 
                     <label class="block mt-4 text-sm">
                         <span class="text-gray-700 dark:text-gray-400">Kiểm tra cấu trúc</span>
-                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                               id="checkValid" type="text" required />
+                        <textarea style=" white-space: pre-wrap" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-textarea focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray" rows="3"
+                        id="checkValid"></textarea>
                     </label>
 
                     <button id="serviceBtn" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Lưu thông tin </button>
@@ -205,13 +231,36 @@
                 $('#serviceId').text(data.uniqueId);
                 $('#price').val(data.price);
                 $('#useCount').val(data.limit);
+                $('#fail').val(data.fail);
+                $('#success').val(data.success);
                 $('#cooldown').val(data.cooldown);
                 $('#structure').val(data.structure);
                 $('#checkValid').val(data.valid);
                 $('#serviceBtn').attr('data-sim',data.id);
                 $(`#status option[value=${data.status}]`).prop('selected', 'selected').change();
-
+                if(data.limit > 0 || data.fail > 0 || data.success > 0)
+                {
+                    $('#valueDiv').removeClass('hidden')
+                    $('#checkbox-2').prop('checked', true)
+                }else{
+                    $('#valueDiv').addClass('hidden')
+                    $('#checkbox-2').prop('checked', false)
+                }
             }
+
+            $('#cooldown').on('keyup change',function () {
+                if($(this).val() <= 0) $(this).val(1)
+            })
+
+            $('#checkbox-2').change(function (e) {
+                valueDiv = $('#valueDiv')
+                if($(this).prop('checked'))
+                {
+                    if(valueDiv.hasClass('hidden')) valueDiv.removeClass('hidden')
+                }else{
+                    valueDiv.addClass('hidden')
+                }
+            })
 
             $('#serviceBtn').click(function (e) {
                 e.preventDefault();
@@ -219,16 +268,17 @@
                 const status = $('#status').val();
                 const price = $('#price').val();
                 const limit = $('#useCount').val();
+                const fail = $('#fail').val();
+                const success = $('#success').val();
                 const cooldown = $('#cooldown').val();
                 const structure = $('#structure').val();
-                const checkValid = $('#checkValid').val();
+                const checkValid = encodeURIComponent($('#checkValid').val());
 
                 $.ajax({
                     type: "POST",
-                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&status=${status}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}`,
+                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&status=${status}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}&success=${parseInt(success)}&fail=${parseInt(fail)}`,
                     cache: false,
                     success: function (data) {
-                        console.log(data)
                         if(data.status > 200)
                         {
                             return vt.error(data.message, {

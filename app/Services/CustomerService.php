@@ -78,7 +78,7 @@ class CustomerService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $transactions = Balance::where([
                 ['accountId', Auth::user()->id]
-            ])->orderBy('created_at', 'DESC')->paginate(15);
+            ])->orderBy('created_at', 'DESC')->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
@@ -208,7 +208,30 @@ class CustomerService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
-            $users = User::paginate(20);
+            $users = User::where([
+                ['tier', '<', 10],
+            ])->paginate(20);
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => ['users' => $users ?? []]
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    public function adminVendorsView()
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $users = User::where([
+                ['tier', '>=', 10],
+            ])->paginate(20);
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
@@ -456,7 +479,7 @@ class CustomerService
         }
     }
 
-    public function updateService(string $uniqueId, string $status = null, int $price = null, int $limit, int $cooldown, string $structure, string $valid, bool $delete = false)
+    public function updateService(string $uniqueId, string $status = null, int $price = null, int $limit, int $success, int $fail, int $cooldown, string $structure, string $valid, bool $delete = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
@@ -468,6 +491,8 @@ class CustomerService
                 $service->status = $status;
                 $service->price = $price;
                 $service->limit = $limit;
+                $service->success = $success;
+                $service->fail = $fail;
                 $service->cooldown = $cooldown;
                 $service->structure = $structure;
                 $service->valid = $valid;

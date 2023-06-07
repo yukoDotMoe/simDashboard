@@ -19,6 +19,8 @@ class Service extends Model
         'price',
         'used',
         'limit',
+        'success',
+        'fail',
         'cooldown',
         'structure',
         'valid',

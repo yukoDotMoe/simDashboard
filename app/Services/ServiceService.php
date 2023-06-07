@@ -54,7 +54,7 @@ class ServiceService
         }
     }
 
-    public function  create(string $name, int $price, int $limit = -1, string $cooldown = null, string $structure, string $valid)
+    public function  create(string $name, int $price, int $limit = -1, int $success = -1, int $fail = -1, string $cooldown = null, string $structure, string $valid)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -65,6 +65,8 @@ class ServiceService
                 'status' => 1,
                 'used' => 0,
                 'limit' => ($limit < 0 ) ? -1 : $limit,
+                'success' => ($success < 0 ) ? -1 : $success,
+                'fail' => ($fail < 0 ) ? -1 : $fail,
                 'cooldown' => $cooldown,
                 'structure' => $structure,
                 'valid' => $valid,

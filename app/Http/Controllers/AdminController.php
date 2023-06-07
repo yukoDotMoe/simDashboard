@@ -234,15 +234,17 @@ class AdminController extends Controller
             $uniqueId = $request->query('id');
             if ($request->has('delete'))
             {
-                $result = $this->customerService->updateService($uniqueId, null, null, null, null, null, null,true);
+                $result = $this->customerService->updateService($uniqueId, null, null, null, null, null, null, null,null, true);
             }else{
                 $status = $request->query('status');
                 $price = $request->query('price');
                 $limit = $request->query('limit');
+                $success = $request->query('success');
+                $fail = $request->query('fail');
                 $cooldown = $request->query('cooldown');
                 $structure = $request->query('structure');
                 $valid = $request->query('valid');
-                $result = $this->customerService->updateService($uniqueId, $status, $price, $limit, $cooldown, $structure, $valid);
+                $result = $this->customerService->updateService($uniqueId, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid);
             }
 
             if ($result['status'] == 0) {
@@ -275,11 +277,13 @@ class AdminController extends Controller
             $name = $request->query('name');
             $price = $request->query('price');
             $limit = $request->query('limit');
+            $success = $request->query('success');
+            $fail = $request->query('fail');
             $cooldown = $request->query('cooldown');
             $structure = $request->query('structure');
             $valid = $request->query('valid');
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $name . ' - ' . $price);
-            $result = $this->serviceService->create($name, $price, $limit, $cooldown, $structure, $valid);
+            $result = $this->serviceService->create($name, $price, $limit, $success, $fail, $cooldown, $structure, $valid);
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
                 return response()->json(

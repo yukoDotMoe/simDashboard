@@ -6,6 +6,7 @@
     <title>{{ config('app.name', 'Laravel') }} - @yield('title')</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('/assets/css/tailwind.output.css') }}" />
+
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="{{ asset('/assets/js/init-alpine.js') }}"></script>
@@ -13,6 +14,7 @@
     <script type="text/javascript" src="https://momentjs.com/downloads/moment-with-locales.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 
     @if(Auth::user()->admin)
         <script src="https://cdn.tiny.cloud/1/1ktnb8hraoe4pupzpp0uatz7hbrkl57f6njhltoxjjq21eb8/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
@@ -99,6 +101,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/8.0.2/pusher.min.js" integrity="sha512-FFchpqjQzRMR75a1q5Se4RZyBsc7UZhHE8faOLv197JcxmPJT0/Z4tGiB1mwKn+OZMEocLT+MmGl/bHa/kPKuQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{{ asset('/assets/js/vanilla-toast.min.js') }}" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.umd.js"></script>
     <script>
         $.ajaxSetup({
             headers: {

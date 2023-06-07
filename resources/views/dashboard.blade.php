@@ -59,66 +59,83 @@
     </div>
 
     <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Payments History    </h2>
-    <div class="w-full mb-8 overflow-hidden bg-white rounded-lg shadow-md">
+    <div class="w-full mb-8 overflow-hidden">
         <div class="w-full overflow-x-auto">
-            <table class="w-full whitespace-no-wrap">
-                <thead>
-                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                    <th class="px-4 py-3">Date</th>
-                    <th class="px-4 py-3">Amount</th>
-                    <th class="px-4 py-3">Old Balance</th>
-                    <th class="px-4 py-3">New Balance</th>
-                    <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Description</th>
-                </tr>
-                </thead>
-                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-                @foreach($data['transactions'] as $task)
-                    <tr class="text-gray-700 dark:text-gray-400" id="{{ $task['uniqueId'] }}">
-                        <td class="px-4 py-3 text-sm"> {{ $task['created_at'] }} </td>
-                        <td class="px-4 py-3 text-sm @if($task['type'] == '-') text-red-600 @else text-green-600 @endif"> {{ $task['type'] }} {{ number_format($task['totalChange'], 0, '', ',') }} </td>
-                        <td class="px-4 py-3 text-sm"> {{ number_format($task['oldBalance'], 0, '', ',') }} </td>
-                        <td class="px-4 py-3 text-sm"> {{ number_format($task['newBalance'], 0, '', ',') }} </td>
-                        <td class="px-4 py-3 text-sm">
-                            @switch($task['status'])
-                                @case(0)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                                          Refunded
-                                        </span>
-                                    @break
-                                @case(1)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
-                                        </span>
-                                    @break
-                                @case(2)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          On-hold
-                                        </span>
-                                    @break
-                                @case(3)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                                          Top-up
-                                        </span>
-                                    @break
-                                @case(4)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          Adjusted
-                                        </span>
-                                    @break
-                                @case(5)
-                                    <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
-                                        </span>
-                                    @break
-                            @endswitch
-                        </td>
-                        <td class="px-4 py-3 text-sm"> {{ $task['reason'] }} </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-            {!! $data['transactions']->links() !!}
+            <div id="payments"></div>
         </div>
     </div>
+@endsection
+
+@section('js')
+    <script>
+        $( document ).ready(function() {
+            const dataList = [
+                @foreach($data['transactions'] as $task)
+                    ["{{ $task['created_at'] }}","{{ $task['type'] }} {{ number_format($task['totalChange'], 0, '', ',') }}", gridjs.html(formatStatus({{$task['status']}})), "{{ $task['activityId'] }}", "{{ $task['reason'] }}"],
+                @endforeach
+            ];
+
+            new gridjs.Grid({
+                columns: ["Date", "Amount", "Status", "Request ID", "Description"],
+                data: dataList,
+                search: true,
+                sort: {
+                    multiColumn: false
+                },
+                pagination: true
+            }).render(document.getElementById("payments"));
+
+
+            function formatStatus(status)
+            {
+                var tobereturn = ``
+                switch (status) {
+                    case 0:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                          Refunded
+                        </span>
+                        `
+                        break;
+                    case 1:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
+                                            Charged
+                                        </span>
+                        `
+                        break;
+                    case 2:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                                          On-hold
+                                        </span>
+                        `
+                        break;
+                    case 3:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
+                                          Top-up
+                                        </span>
+                        `
+                        break;
+                    case 4:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
+                                          Adjusted
+                                        </span>
+                        `
+                        break;
+                    case 5:
+                        tobereturn = `
+                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
+                                            Charged
+                                        </span>
+                        `
+                        break;
+                }
+
+                return tobereturn
+            }
+        })
+    </script>
 @endsection

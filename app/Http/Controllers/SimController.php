@@ -28,9 +28,7 @@ class SimController extends Controller
             $validator = Validator::make($request->all(), [
                 'service' => 'required|bail',
                 'network' => 'nullable|string',
-                'prefix' => 'nullable|min:2|max:2|integer',
-                'Eprefix' => 'nullable|min:2|max:2|integer',
-                'number' => 'nullable|min:10|max:10|integer',
+                'number' => 'nullable|min:10|max:15|integer',
             ]);
 
             if ($validator->fails()) {
@@ -49,26 +47,10 @@ class SimController extends Controller
                 $user = User::where('id', Auth::user()->id)->first();
             }
             $serviceId = $request->query('service');
+            $network = $request->query('network');
+            $phone = $request->query('phone');
 
-            if ($request->has('network')) {
-                $result = $this->simsService->networkRent($user->api_token, $serviceId, $request->query('network'));
-            }
-
-            if ($request->has('prefix')) {
-                $result = $this->simsService->rentStartWith($user->api_token, $serviceId, $request->query('prefix'));
-            }
-
-            if ($request->has('Eprefix')) {
-                $result = $this->simsService->rentStartWith($user->api_token, $serviceId, $request->query('Eprefix'), false);
-            }
-
-            if ($request->has('number')) {
-                $result = $this->simsService->basicRent($user->api_token, $serviceId, $request->query('number'));
-            }
-
-            if (!isset($result)) {
-                $result = $this->simsService->basicRent($user->api_token, $serviceId);
-            }
+            $result = $this->simsService->basicRent($user->api_token, $serviceId, $network, $phone);
 
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);

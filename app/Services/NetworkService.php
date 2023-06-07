@@ -56,8 +56,9 @@ class NetworkService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            $uniqueId = substr(sha1(date("Y-m-d H:i:s")),0,10);
             $result = $this->networkRepo->create([
-                'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
+                'uniqueId' => $uniqueId,
                 'networkName' => $name,
                 'status' => 1,
                 'created_at' => date('Y-m-d H:i:s'),
@@ -74,7 +75,8 @@ class NetworkService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
             return [
                 'status' => 1,
-                'data' => 'Created network ' . $name
+                'data' => 'Created network ' . $name,
+                'uniqueId' => $uniqueId
             ];
         } catch (Exception $e)
         {

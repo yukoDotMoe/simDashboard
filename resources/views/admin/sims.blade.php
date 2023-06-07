@@ -239,11 +239,12 @@
             function fillToModal(data) {
                 if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
                 $('#simId').text(data.uniqueId);
+                $('#simEdit').attr('data-sim', data.uniqueId);
                 $('#phone').text(data.phone);
 
                 locked_list = JSON.parse(data.locked_services)
                 $('#lockedList').html('')
-                if(Object.keys(locked_list).length > 0)
+                if(Array.isArray(locked_list) && Object.keys(locked_list).length > 0)
                 {
                     Object.keys(locked_list).forEach(function(key) {
                         $('#lockedList').append(`

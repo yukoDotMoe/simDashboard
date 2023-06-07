@@ -86,4 +86,40 @@ class ApiService
             );
         }
     }
+
+    public function checkApi(string $apiKey)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+
+            $user = User::where('api_token', $apiKey)->first();
+            if (empty($user)) return [
+                'status' => 0,
+                'error' => 'API Key not found'
+            ];
+
+            if ($user['tier'] < 0) return [
+                'status' => 0,
+                'error' => 'Your account has been banned. Please contact administrator'
+            ];
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+
+            return [
+                'status' => 1,
+                'data' => [
+                    'userId' => $user['id'],
+                    'balance' => $user['balance'],
+                    'role' => $user['admin'] ? 'admin' : ($user['tier'] >= 10 ? 'vendor' : 'user')
+                ]
+            ];
+
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
 }
