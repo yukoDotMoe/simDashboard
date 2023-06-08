@@ -40,6 +40,7 @@ Route::group([
         'middleware' => ['admin']
     ], function (){
         Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'adminUsersView'])->name('admin.users');
+        Route::get('/admin/vendors', [\App\Http\Controllers\AdminController::class, 'adminVendorsView'])->name('admin.vendors');
         Route::post('/admin/users/{id}', [\App\Http\Controllers\AdminController::class, 'getUser'])->name('admin.user');
         Route::post('/admin/balance/edit', [\App\Http\Controllers\AdminController::class, 'editBal'])->name('admin.userBalance');
         Route::post('/admin/user/edit', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.userEdit');

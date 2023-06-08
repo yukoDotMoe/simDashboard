@@ -40,6 +40,13 @@ class AdminController extends Controller
         return view('admin.users', ['data' => $result['data']]);
     }
 
+    public function adminVendorsView()
+    {
+        $result = $this->customerService->adminVendorsView();
+        if ($result['status'] == 0 ) abort(502);
+        return view('admin.vendors', ['data' => $result['data']]);
+    }
+
     public function adminSimsView()
     {
         $result = $this->customerService->adminSimsView();

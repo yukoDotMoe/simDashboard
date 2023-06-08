@@ -231,7 +231,27 @@ class CustomerService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $users = User::where([
                 ['tier', '>=', 10],
-            ])->paginate(20);
+            ])->get();
+            foreach ($users as $user)
+            {
+                // TODO: change this to handleByVendor #sims
+                $sims = Sims::where('userId', $user->id)->count();
+
+                $totalProfit = DB::table('vendors_balance')->where([
+                    ['vendorId', $user->id],
+                    ['type', '+']
+                ])->sum('amount');
+
+                // TODO: change this to handleByVendor #requests
+                $totalTurn = Activity::where([
+                    ['userId', $user->id],
+                    ['status', 1]
+                ])->count();
+
+                $user->simCount = $sims;
+                $user->totalProfit = $totalProfit;
+                $user->rentTotal = $totalTurn;
+            }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
