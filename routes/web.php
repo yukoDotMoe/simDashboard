@@ -74,4 +74,7 @@ Route::group([
     'prefix' => 'vendor'
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\VendorController::class, 'dashboard'])->name('vendor.dashboard');
+    Route::get('/sims', [\App\Http\Controllers\VendorController::class, 'sims'])->name('vendor.sims');
+    Route::post('/dashboard/filter', [\App\Http\Controllers\VendorController::class, 'dashboardFilter'])->name('vendor.dashboard.filter');
+    Route::post('/sims/filter', [\App\Http\Controllers\VendorController::class, 'simsFilter'])->name('vendor.sims.filter');
 });

@@ -234,7 +234,6 @@ class CustomerService
             ])->get();
             foreach ($users as $user)
             {
-                // TODO: change this to handleByVendor #sims
                 $sims = Sims::where('userId', $user->id)->count();
 
                 $totalProfit = DB::table('vendors_balance')->where([
@@ -242,9 +241,8 @@ class CustomerService
                     ['type', '+']
                 ])->sum('amount');
 
-                // TODO: change this to handleByVendor #requests
                 $totalTurn = Activity::where([
-                    ['userId', $user->id],
+                    ['handleByVendor', $user->id],
                     ['status', 1]
                 ])->count();
 

@@ -97,6 +97,28 @@
                         @endif
                     @endforeach
                 @endif
+            @else
+                @foreach(config('simConfig.vendorNavbar') as $nav => $link)
+                    @if($link['active'])
+                        <li class="relative px-6 py-3">
+                            @if(request()->segment(2) == $nav)
+                                <span class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                            @endif
+                            <a class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 @if(request()->segment(2) == $nav) text-gray-800 dark:text-white dark:hover:text-gray-200 @else hover:text-gray-800 dark:hover:text-gray-200 @endif" href="{{ ($link['singleLink']) ? $link['redirect'] : route($link['redirect']) }}">
+                                {!!
+                                    str_replace([
+                                        'stroke-width="1.5"',
+                                        'svg'
+                                    ],[
+                                        'stroke-width="2"',
+                                        'svg class="w-5 h-5"'
+                                    ], $link['icon'])
+                                !!}
+                                <span class="ml-4">{{ $link['name'] }}</span>
+                            </a>
+                        </li>
+                    @endif
+                @endforeach
             @endif
         </ul>
     </div>

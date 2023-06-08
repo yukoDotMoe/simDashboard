@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::group(['middleware' => ['token']], function (){
-    Route::get('/user/info', [App\Http\Controllers\UsersController::class, 'accountInfo']);
-    Route::get('/sim/services', [App\Http\Controllers\ServiceController::class, 'getAll']);
-    Route::get('/sim/networks', [App\Http\Controllers\NetworkController::class, 'getAll']);
+    Route::post('/user/info', [App\Http\Controllers\UsersController::class, 'accountInfo']);
+    Route::post('/sim/services', [App\Http\Controllers\ServiceController::class, 'getAll']);
+    Route::post('/sim/networks', [App\Http\Controllers\NetworkController::class, 'getAll']);
 
-    Route::get('/sim/rent', [App\Http\Controllers\SimController::class, 'userRent']);
-    Route::get('/sim/get', [App\Http\Controllers\SimController::class, 'fetchRequest']);
+    Route::post('/sim/rent', [App\Http\Controllers\SimController::class, 'userRent']);
+    Route::post('/sim/get', [App\Http\Controllers\SimController::class, 'fetchRequest']);
 });
 
 Route::post('/token/check/{token}', [App\Http\Controllers\UsersController::class, 'checkToken']);

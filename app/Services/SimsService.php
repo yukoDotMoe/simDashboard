@@ -373,14 +373,13 @@ class SimsService
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ]);
-
         return (empty($result)) ? false : $id;
     }
 
     public function handleClientRequest($data, $vendor = false, $vendorId = null)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $data);
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $data . ' - ' . $vendor . ' - ' . $vendorId);
 //             let assume the data will be:
              $test = [
 // For sending heartbeat
@@ -534,9 +533,9 @@ class SimsService
                         'status' => 1,
                         'code' => $extractedCode[0],
                         'smsContent' => $simData['code'],
-                        'reason' => 'Code successfully returned'
+                        'reason' => 'Code successfully returned',
+                        'handleByVendor' => $vendorId
                     ];
-                    if ($vendor && $phoneData['userid'] !== $vendorId) $updateContent['handleByVendor'] = $vendorId;
                     $updateActivity = $this->activityService->update($activity['uniqueId'], $updateContent);
                     DB::commit();
 
@@ -551,15 +550,19 @@ class SimsService
                         continue;
                     }
 
-                    $this->sendNotify($activity['userid'], [
-                        'uniqueId' => $activity['uniqueId'],
-                        'status' => 1,
-                        'code' => $extractedCode[0]
-                    ]);
+                    $metadataRequest = json_decode($activity['metadata'], true);
+                    if (isset($metadataRequest['isApi']) && !$metadataRequest['isApi'])
+                    {
+                        $this->sendNotify($activity['userid'], [
+                            'uniqueId' => $activity['uniqueId'],
+                            'status' => 1,
+                            'code' => $extractedCode[0]
+                        ]);
+                    }
 
                     DB::beginTransaction();
                     $this->serviceRepo->update($activity['serviceId'], ['used' => $service['used']+1]);
-                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1, 'networkId' => $network['uniqueId']]);
+                    Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1, 'networkId' => $network['uniqueId'], 'userid' => $vendorId]);
 
                     $user = User::where('id', $activity['userid'])->first();
                     $user->totalRent = $user->totalRent + 1;
@@ -578,6 +581,23 @@ class SimsService
                         continue;
                     }
                     SimsService::addSimResult($simNumber, $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
+
+                    if ($vendor)
+                    {
+                        $vendorRow = User::where('id', $vendorId)->first();
+                        DB::table('vendors_balance')->insert([
+                            'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
+                            'vendorId' => $vendorId,
+                            'userID' => $activity['userid'],
+                            'requestID' => $activity['uniqueId'],
+                            'amount' => ($service['price'] * $vendorRow->profit) / 100,
+                            'type' => '+',
+                            'reason' => 'Pay for request ' . $activity['uniqueId'],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ]);
+                    }
+
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully return code to request.'
@@ -613,7 +633,7 @@ class SimsService
     //    - Create activity log
     // 3. Wait for client to send update then send to user.
 
-    public function rentFunc(string $token, string $phoneNumber, string $serviceId, bool $custom = false)
+    public function rentFunc(string $token, string $phoneNumber, string $serviceId, bool $api, bool $custom = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $phoneNumber);
@@ -707,7 +727,7 @@ class SimsService
 
             DB::beginTransaction();
             // Create request for easy working
-            $createRequest = $this->activityService->create($user->id, $phone['phone'], $phone['networkId'], $phone['countryCode'], $serviceId, $holdBalance['id'], $custom);
+            $createRequest = $this->activityService->create($user->id, $phone['phone'], $phone['networkId'], $phone['countryCode'], $serviceId, $holdBalance['id'], $api, $custom);
             DB::commit();
             if($createRequest['status'] == 0)
             {
@@ -750,7 +770,7 @@ class SimsService
         }
     }
 
-    public function basicRent(string $token, string $serviceId, string $networkId, string $phoneNumber = null)
+    public function basicRent(string $token, string $serviceId, string $networkId, bool $api, string $phoneNumber = null)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -784,7 +804,7 @@ class SimsService
                     'error' => 'No phone number available'
                 ];
             }
-            $result = $this->rentFunc($token, $phone['phone'], $serviceId);
+            $result = $this->rentFunc($token, $phone['phone'], $serviceId, $api);
             if($result['status'] == 0)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - '. $result['error']);

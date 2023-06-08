@@ -119,7 +119,10 @@ class CheckActivities extends Command
                 );
 
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
-                $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
+                $metadataRequest = json_decode($activity['metadata'], true);
+                if (isset($metadataRequest['isApi']) && !$metadataRequest['isApi']) {
+                    $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
+                }
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Finish Closing request - ' . $activity['uniqueId']);
                 $out->writeln("[%] Finished update job ID '" . $activity['uniqueId'] . "'.");
             }

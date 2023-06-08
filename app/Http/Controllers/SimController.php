@@ -27,7 +27,7 @@ class SimController extends Controller
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             $validator = Validator::make($request->all(), [
                 'service' => 'required|bail',
-                'network' => 'nullable|string',
+                'network' => 'required|string',
                 'number' => 'nullable|min:10|max:15|integer',
             ]);
 
@@ -42,15 +42,17 @@ class SimController extends Controller
             }
 
             if ($request->has('token')) {
-                $user = User::where('api_token', $request->query('token'))->first();
+                $user = User::where('api_token', $request->token)->first();
+                $isApi = true;
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
+                $isApi = false;
             }
-            $serviceId = $request->query('service');
-            $network = $request->query('network');
-            $phone = $request->query('phone');
+            $serviceId = $request->service;
+            $network = $request->network;
+            $phone = $request->phone;
 
-            $result = $this->simsService->basicRent($user->api_token, $serviceId, $network, $phone);
+            $result = $this->simsService->basicRent($user->api_token, $serviceId, $network, $isApi, $phone);
 
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);

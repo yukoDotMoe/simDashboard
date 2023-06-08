@@ -59,7 +59,7 @@ class ActivitiesService
         }
     }
 
-    public function create(string $userid, string $phone, string $networkId, string $country, string $serviceId, string $balanceId, bool $custom = false)
+    public function create(string $userid, string $phone, string $networkId, string $country, string $serviceId, string $balanceId, bool $api, bool $custom = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
@@ -77,6 +77,9 @@ class ActivitiesService
                 'smsContent' => null,
                 'code' => null,
                 'customRent' => ($custom) ? 1:0,
+                'metadata' => json_encode([
+                    'isApi' => $api
+                ]),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
