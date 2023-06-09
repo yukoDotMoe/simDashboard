@@ -194,7 +194,6 @@ class SimsService
                     'serviceName' => $service['serviceName'],
                     'status' => $activity['status'],
                     'createdTime' => $activity['created_at'],
-                    'smsContent' => $activity['smsContent'],
                     'code' => $activity['code'],
                 ]
             ];
@@ -777,7 +776,7 @@ class SimsService
     public function basicRent(string $token, string $serviceId, string $networkId, bool $api, string $phoneNumber = null)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $phoneNumber);
             if (!empty($phoneNumber))
             {
                 $phone = $this->simsRepo->findByPhone($phoneNumber);

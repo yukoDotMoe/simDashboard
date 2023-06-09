@@ -145,7 +145,7 @@ class SimController extends Controller
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             $validator = Validator::make($request->all(), [
-                'request' => 'required|string',
+                'requestId' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -158,13 +158,13 @@ class SimController extends Controller
                 );
             }
             if ($request->has('token')) {
-                $user = User::where('api_token', $request->query('token'))->first();
+                $user = User::where('api_token', $request->token)->first();
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
             }
-            $requestId = $request->query('request');
+            $requestId = $request->requestId;
 
-            $result = $this->simsService->fetchRequest($requestId);
+            $result = $this->simsService->fetchRequest((string)$requestId);
 
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
