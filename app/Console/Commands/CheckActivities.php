@@ -97,7 +97,7 @@ class CheckActivities extends Command
                     return 0;
                 }
 
-                SimsService::addSimResult($phone['phone'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
+                SimsService::addSimResult($phone['uniqueId'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
                 $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
                 $transaction->status = 5;
                 $transaction->save();
@@ -120,8 +120,8 @@ class CheckActivities extends Command
 
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
                 $metadataRequest = json_decode($activity['metadata'], true);
-                if (isset($metadataRequest['isApi']) && !$metadataRequest['isApi']) {
-                    $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
+                if (isset($metadataRequest['isApi'])) {
+                    if ( !$metadataRequest['isApi']) $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
                 }
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Finish Closing request - ' . $activity['uniqueId']);
                 $out->writeln("[%] Finished update job ID '" . $activity['uniqueId'] . "'.");

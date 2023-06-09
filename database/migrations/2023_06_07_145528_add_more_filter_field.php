@@ -21,6 +21,7 @@ class AddMoreFilterField extends Migration
         Schema::create('success_records', function (Blueprint $table) {
             $table->id();
             $table->string('uniqueId');
+            $table->string('vendorId')->nullable();
             $table->string('phone');
             $table->string('serviceId');
             $table->string('requestId');
@@ -32,6 +33,7 @@ class AddMoreFilterField extends Migration
         Schema::create('failed_records', function (Blueprint $table) {
             $table->id();
             $table->string('uniqueId');
+            $table->string('vendorId')->nullable();
             $table->string('phone');
             $table->string('serviceId');
             $table->string('requestId');

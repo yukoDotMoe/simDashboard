@@ -75,6 +75,7 @@ Route::group([
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\VendorController::class, 'dashboard'])->name('vendor.dashboard');
     Route::get('/sims', [\App\Http\Controllers\VendorController::class, 'sims'])->name('vendor.sims');
+    Route::post('/sims/{id}', [\App\Http\Controllers\VendorController::class, 'simsActivities'])->name('vendor.sims.activities');
     Route::post('/dashboard/filter', [\App\Http\Controllers\VendorController::class, 'dashboardFilter'])->name('vendor.dashboard.filter');
     Route::post('/sims/filter', [\App\Http\Controllers\VendorController::class, 'simsFilter'])->name('vendor.sims.filter');
 });

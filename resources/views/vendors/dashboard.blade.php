@@ -145,7 +145,6 @@
                     dataType: "json",
                     encode: true,
                     success: function (data) {
-                        console.log(data.data)
                         updateTable(data.data)
                     },
                     error: function (e) {

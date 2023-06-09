@@ -69,15 +69,73 @@ class VendorsService
         }
     }
 
+    public function fetchSimActivities($sim)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $sims = Sims::where('uniqueId', $sim)->first();
+            $working = DB::table('success_records')->where('phone', $sim)->get()->transform(function ($item){
+                $service = Service::where('uniqueId', $item->serviceId)->first();
+                return [
+                    'id' => $item->uniqueId,
+                    'service' => $service->serviceName ?? 'Deleted Service',
+                    'request' => $item->requestId ?? 'Deleted Request',
+                    'reason' => $item->reason,
+                    'date' => Carbon::parse($item->created_at)->toDateTimeString()
+                ];
+            });
+            $failed = DB::table('failed_records')->where('phone', $sim)->get()->transform(function ($item){
+                $service = Service::where('uniqueId', $item->serviceId)->first();
+                return [
+                    'id' => $item->uniqueId,
+                    'service' => $service->serviceName ?? 'Deleted Service',
+                    'request' => $item->requestId ?? 'Deleted Request',
+                    'reason' => $item->reason,
+                    'date' => Carbon::parse($item->created_at)->toDateTimeString()
+                ];
+            });
+
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return ['status' => 1, 'data' => ['phone' => $sims->phone,'success' => $working ?? [], 'failed' => $failed ?? []]];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
     public function simsListView()
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $sims = Sims::where('userId', Auth::user()->id)->get()->toArray();
+            $sims = Sims::where('userId', Auth::user()->id)->get()->transform(function ($item){
+                return [
+                    'id' => $item->uniqueId,
+                    'phone' => $item->phone,
+                    'status' => $item->status,
+                    'success' => $item->success,
+                    'failed' => $item->failed,
+                    'date' => Carbon::parse($item->updated_at)->toDateTimeString()
+                ];
+            })->toArray();
+            $working = Sims::where([
+                ['userId', Auth::user()->id],
+                ['status', '>', 0]
+            ])->count();
+            $nonWorking = Sims::where([
+                ['userId', Auth::user()->id],
+                ['status', '<', 0]
+            ])->count();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End');
             return [
                 'status' => 1,
-                'data' => $sims ?? []
+                'data' => [
+                    'sims' => $sims ?? [],
+                    'online' => $working ?? 0,
+                    'offline' => $nonWorking ?? 0
+                ]
             ];
         } catch (Exception $e)
         {

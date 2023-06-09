@@ -551,13 +551,17 @@ class SimsService
                     }
 
                     $metadataRequest = json_decode($activity['metadata'], true);
-                    if (isset($metadataRequest['isApi']) && !$metadataRequest['isApi'])
+                    Log::info(json_encode($metadataRequest));
+                    if (isset($metadataRequest['isApi']))
                     {
-                        $this->sendNotify($activity['userid'], [
-                            'uniqueId' => $activity['uniqueId'],
-                            'status' => 1,
-                            'code' => $extractedCode[0]
-                        ]);
+                        if (!$metadataRequest['isApi'])
+                        {
+                            $this->sendNotify($activity['userid'], [
+                                'uniqueId' => $activity['uniqueId'],
+                                'status' => 1,
+                                'code' => $extractedCode[0]
+                            ]);
+                        }
                     }
 
                     DB::beginTransaction();
@@ -580,7 +584,7 @@ class SimsService
                         ];
                         continue;
                     }
-                    SimsService::addSimResult($simNumber, $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
+                    SimsService::addSimResult($phoneData['uniqueId'], $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
 
                     if ($vendor)
                     {
