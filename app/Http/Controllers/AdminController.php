@@ -79,6 +79,37 @@ class AdminController extends Controller
         return response()->json($result);
     }
 
+    public function bulkEdit(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $action = $request->type;
+            $data = $request->data;
+            $result = $this->customerService->bulkEdit($action, $data);
+            if ($result['status'] == 0) {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
     public function getService($id)
     {
         $id = str_replace(' ', '', $id);

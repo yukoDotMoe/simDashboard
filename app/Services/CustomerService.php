@@ -435,6 +435,28 @@ class CustomerService
         }
     }
 
+    public function bulkEdit(string $action, array $data)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            if ($action == 'lock')
+            {
+                Sims::whereIn('uniqueId', $data)->update(['status' => 0]);
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => ['edit' => 'Success']
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
     public function editBalance(string $userid, string $type, int $balance, string $reason)
     {
         try {

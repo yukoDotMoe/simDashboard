@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="generator" content="Astro v1.1.5">
-    <meta name="description" content="Template built with tailwindcss using Tailus blocks v2">
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <meta name="description" content="Rent temporary sim cards for mobile connectivity without long-term commitment or high costs. Get connected easily and affordably.">
+    <title>{{ config('app.name', 'Laravel') }} - Reliable SIM renting platform</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/index.350e2433.css"/>

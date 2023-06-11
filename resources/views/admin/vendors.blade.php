@@ -154,57 +154,8 @@
                 }
             </style>
             <div id="vendors"></div>
-{{--            <table class="w-full whitespace-no-wrap">--}}
-{{--                <thead>--}}
-{{--                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">--}}
-{{--                    <th class="px-4 py-3">ID</th>--}}
-{{--                    <th class="px-4 py-3">Tên</th>--}}
-{{--                    <th class="px-4 py-3">Email</th>--}}
-{{--                    <th class="px-4 py-3">Doanh Thu</th>--}}
-{{--                    <th class="px-4 py-3">Cấp Lợi Nhuận</th>--}}
-{{--                    <th class="px-4 py-3">Tổng Số Lượt Cho Thuê</th>--}}
-{{--                    <th class="px-4 py-3">Số Lượng Sim</th>--}}
-{{--                    <th class="px-4 py-3">Trạng Thái</th>--}}
-{{--                    <th class="px-4 py-3">Tạo Vào</th>--}}
-{{--                    <th class="px-4 py-3">Hành Động</th>--}}
-{{--                </tr>--}}
-{{--                </thead>--}}
-{{--                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">--}}
-{{--                @foreach($data['users'] as $task)--}}
-{{--                    <tr class="text-gray-700 dark:text-gray-400">--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['id'] }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm @if($task['admin']) text-purple-600 font-bold @endif">{{ $task['name'] }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['email'] }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">0</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['profit'] ?? 0 }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['profit'] ?? 0 }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['profit'] ?? 0 }}</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">@if($task['tier'] < 0) Khoá @else Hoạt Động @endif</td>--}}
-{{--                        <td class="px-4 py-3 text-sm">{{ $task['created_at']}}</td>--}}
-{{--                        <td class="px-4 py-3">--}}
-{{--                            <div class="flex items-center space-x-4 text-sm">--}}
-{{--                                <button @click="openModal" data-user="{{ $task['id'] }}" class="editBtn flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Edit">--}}
-{{--                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">--}}
-{{--                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>--}}
-{{--                                    </svg>--}}
-{{--                                </button>--}}
-{{--                                <button class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Delete">--}}
-{{--                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">--}}
-{{--                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>--}}
-{{--                                    </svg>--}}
-{{--                                </button>--}}
-{{--                            </div>--}}
-{{--                        </td>--}}
-{{--                    </tr>--}}
-{{--                @endforeach--}}
-{{--                </tbody>--}}
-{{--            </table>--}}
-{{--            {!! $data['users']->links() !!}--}}
         </div>
     </div>
-
-    <button data-type="delete" type="submit" class="action block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple
-"> Rent </button>
 @endsection
 
 @section('js')
@@ -240,14 +191,6 @@
             ];
             const grid = new gridjs.Grid({
                 columns: [
-                    {
-                        id: 'myCheckbox',
-                        name: '#',
-                        plugin: {
-                            // install the RowSelection plugin
-                            component: gridjs.plugins.selection.RowSelection,
-                        }
-                    },
                     { name: 'ID',
                         attributes: (cell) => {
                             if (cell) {
@@ -281,21 +224,6 @@
 
                 pagination: true
             }).render(document.getElementById("vendors"));
-
-            $(".action").click(function (e) {
-                e.preventDefault()
-                const selected = $(".gridjs-tr-selected")
-                var action = $(this).attr('data-type') // var cause we gonna need it for ajax func
-                if (selected.length <= 0) return 0; // can change this to a notification if possible
-                selected.each(function (e) {
-
-                    // TODO: do something with this #js
-                    // When handle this in logic, please make it array processing, arigato mr duco ヽ(*・ω・)ﾉ
-
-                    const userid = $(this).children('[data-column-id=id]').attr('data-user')
-                    console.log(`${action} ${userid}`)
-                })
-            })
 
             function fillToModal(data) {
                 if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');

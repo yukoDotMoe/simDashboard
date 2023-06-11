@@ -56,6 +56,7 @@ Route::group([
         Route::post('/admin/phone/{id}', [\App\Http\Controllers\AdminController::class, 'getSimByPhone'])->name('admin.simByPhone');
         Route::post('/admin/sim/edit', [\App\Http\Controllers\AdminController::class, 'updateSimInfo'])->name('admin.simEdit');
         Route::post('/admin/sim/removeLockedService', [\App\Http\Controllers\AdminController::class, 'removeLockedService'])->name('admin.removeLockedService');
+        Route::post('/admin/sim/bulk', [\App\Http\Controllers\AdminController::class, 'bulkEdit'])->name('admin.bulkEdit');
 
         Route::get('/admin/services', [\App\Http\Controllers\AdminController::class, 'adminServicesView'])->name('admin.services');
         Route::get('/admin/create/service', [\App\Http\Controllers\AdminController::class, 'serviceCreate'])->name('admin.createService');

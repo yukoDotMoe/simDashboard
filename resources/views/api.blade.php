@@ -23,7 +23,15 @@
         @if(empty($data['apiDocs']['value']))
             No API document found at the moment.
         @else
-            {!! str_replace('!!token!!', Auth::user()->api_token, $data['apiDocs']['value']) !!}
+            @php
+            $array_from_to = array (
+                '<ul' => '<ul class="max-w-md space-y-1 text-gray-500 list-disc list-inside dark:text-gray-400"',
+                '<ol' => '<ol class="pl-5 mt-2 space-y-1 list-decimal list-inside"',
+                '<hr' => '<hr class="my-8"',
+                'language-javascript' => 'language-javascript p-3 text-xs italic font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300'
+            );
+            @endphp
+            {!! str_replace(array_keys($array_from_to), $array_from_to, $data['apiDocs']['value']) !!}
         @endif
     </div>
 
