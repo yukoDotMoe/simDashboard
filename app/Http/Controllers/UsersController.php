@@ -22,15 +22,111 @@ class UsersController extends Controller
         $this->apiService = $apiService;
     }
 
+    public function balanceView()
+    {
+        return view('balance');
+    }
+
     public function dashboardView()
     {
         if (Auth::user()->tier >= 10)
         {
             return view('vendors.dashboard');
         }else{
-            $result = $this->customerService->dashboardView();
-            if ($result['status'] == 0 ) abort(502);
-            return view('dashboard', ['data' => $result['data']]);
+            return view('dashboard');
+        }
+    }
+
+    public function balanceFilter(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $start = $request->startDate;
+            $end = $request->endDate;
+            $result = $this->customerService->balanceFilter($start, $end);
+            if ($result['status'] == 0 )
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function requestsFilter(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $start = $request->startDate;
+            $end = $request->endDate;
+            $result = $this->customerService->requestsView($start, $end);
+            if ($result['status'] == 0 )
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function dashboardFilter(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $start = $request->startDate;
+            $end = $request->endDate;
+            $result = $this->customerService->dashboardView($start, $end);
+            if ($result['status'] == 0 )
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
         }
     }
 

@@ -72,18 +72,116 @@ class CustomerService
         }
     }
 
-    public function dashboardView()
+    public function requestsView($startDate, $endDate)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
+            $transactions = Activity::where([
+                ['userid', Auth::user()->id]
+            ])->orderBy('created_at', 'DESC')->whereDate('created_at','<=',$end)
+                ->whereDate('created_at','>=',$start)
+                ->get()->transform(function ($item) {
+                    $service = Service::where('uniqueId', $item->serviceId)->first();
+                    return [
+                        'id' => $item->uniqueId,
+                        'service' => $service->serviceName,
+                        'price' => $service->price,
+                        'phone' => $item->phone,
+                        'status' => $item->status,
+                        'code' => $item->code,
+                        'date' => Carbon::parse($item->created_at)->toDateTimeString(),
+                    ];
+                })->toArray();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => $transactions
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    public function dashboardView($startDate, $endDate)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
             $transactions = Balance::where([
-                ['accountId', Auth::user()->id]
-            ])->orderBy('created_at', 'DESC')->get();
+                ['accountId', Auth::user()->id],
+                ['status', "<=", 2]
+            ])->orderBy('created_at', 'DESC')->whereDate('created_at','<=',$end)
+                ->whereDate('created_at','>=',$start)
+                ->get()->transform(function ($item) {
+                    return [
+                        'date' => Carbon::parse($item->created_at)->toDateTimeString(),
+                        'type' => $item->type,
+                        'amount' => $item->totalChange,
+                        'status' => $item->status,
+                        'request' => $item->activityId,
+                        'reason' => $item->reason,
+                    ];
+                })->toArray();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return [
+                'status' => 1,
+                'data' => $transactions
+            ];
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return array(
+                'status' => 0,
+                'error' => $e->getMessage()
+            );
+        }
+    }
+
+    public function balanceFilter($startDate, $endDate)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
+            $totalSpent = Balance::where([
+                ['accountId', Auth::user()->id],
+                ['status', 1]
+            ])->whereDate('created_at','<=',$end)
+                ->whereDate('created_at','>=',$start)->sum('totalChange');
+            $totalTopup = Balance::where([
+                ['accountId', Auth::user()->id],
+                ['status', 3]
+            ])->whereDate('created_at','<=',$end)
+                ->whereDate('created_at','>=',$start)->sum('totalChange');
+
+            $transactions = Balance::where([
+                ['accountId', Auth::user()->id],
+                ['status', ">=", 3]
+            ])->orderBy('created_at', 'DESC')->whereDate('created_at','<=',$end)
+                ->whereDate('created_at','>=',$start)
+                ->get()->transform(function ($item) {
+                    return [
+                        'date' => Carbon::parse($item->created_at)->toDateTimeString(),
+                        'type' => $item->type,
+                        'amount' => $item->totalChange,
+                        'status' => $item->status,
+                        'request' => $item->activityId,
+                        'reason' => $item->reason,
+                    ];
+                })->toArray();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
                 'data' => [
-                    'transactions' => $transactions ?? []
+                    'transactions' => $transactions,
+                    'spent' => $totalSpent,
+                    'topup' => $totalTopup
                 ]
             ];
         } catch (Exception $e) {
@@ -556,4 +654,27 @@ class CustomerService
         }
     }
 
+//    public function balanceView()
+//    {
+//        $totalSpent = Balance::where([
+//            ['accountId', Auth::user()->id],
+//            ['status', 1]
+//        ])->sum('totalChange');
+//
+//        $totalTopup = Balance::where([
+//            ['accountId', Auth::user()->id],
+//            ['status', 3]
+//        ])->sum('totalChange');
+//
+//        $accountChanges = Balance::where([
+//            ['accountId', Auth::user()->id],
+//            ['status', ">=", 3]
+//        ])->get();
+//
+//        return [
+//            'spent' => $totalSpent,
+//            'topup' => $totalTopup,
+//            'transactions' => $accountChanges
+//        ];
+//    }
 }

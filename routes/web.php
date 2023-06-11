@@ -19,21 +19,27 @@ Route::get('/', function () {
 
 
 require __DIR__.'/auth.php';
-Route::get('/register', function () {
-    return redirect('/');
-});
+//Route::get('/register', function () {
+//    return redirect('/');
+//});
 
 Route::group([
     'middleware' => ['auth', 'verified', 'user'],
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\UsersController::class, 'dashboardView'])->name('dashboard');
-    Route::get('/apiDocs', [\App\Http\Controllers\UsersController::class, 'apiDoc'])->name('apiDocs');
+    Route::post('/dashboard/filter', [\App\Http\Controllers\UsersController::class, 'dashboardFilter'])->name('dashboard.filter');
+
+    Route::get('/balance', [\App\Http\Controllers\UsersController::class, 'balanceView'])->name('balance');
+    Route::post('/balance/filter', [\App\Http\Controllers\UsersController::class, 'balanceFilter'])->name('balance.filter');
 
     Route::get('/basicRent', [\App\Http\Controllers\SimController::class, 'rentView'])->name('basicRent');
     Route::get('/customRent', [\App\Http\Controllers\SimController::class, 'customRentView'])->name('customRent');
     Route::post('/rent', [\App\Http\Controllers\SimController::class, 'userRent'])->name('rentFunc');
-    Route::get('/rentHistory', [\App\Http\Controllers\SimController::class, 'rentHistoryView'])->name('rentHistory');
 
+    Route::get('/rentHistory', [\App\Http\Controllers\SimController::class, 'rentHistoryView'])->name('rentHistory');
+    Route::post('/rentHistory/filter', [\App\Http\Controllers\UsersController::class, 'requestsFilter'])->name('rentHistory.filter');
+
+    Route::get('/apiDocs', [\App\Http\Controllers\UsersController::class, 'apiDoc'])->name('apiDocs');
     Route::post('/resetToken', [\App\Http\Controllers\UsersController::class, 'resetToken'])->name('resetToken');
 
     Route::group([

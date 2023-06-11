@@ -79,7 +79,7 @@ class CheckActivities extends Command
                     'newBalance' => $user->balance + $transaction['totalChange'],
                     'totalChange' => $transaction['totalChange'],
                     'status' => 0, // 2: hold ; 1: success
-                    'reason' => 'Refunded for request ' . $activity['uniqueId'],
+                    'reason' => 'Refunded',
                     'activityId' => $activity['uniqueId'],
                     'type' => '+',
                     'created_at' => date('Y-m-d H:i:s'),

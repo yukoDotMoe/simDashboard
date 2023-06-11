@@ -133,7 +133,7 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                 <tr class="text-gray-700 dark:text-gray-400" id="${id}">
                         <td class="px-4 py-3 text-sm" id="uniqueId"> ${id} </td>
                         <td class="px-4 py-3 text-sm" id="serviceName"> ${name} </td>
-                        <td class="px-4 py-3 text-sm" id="servicePrice"> ${parseInt(price).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} </td>
+                        <td class="px-4 py-3 text-sm" id="servicePrice"> ${(new Intl.NumberFormat('vi-VN').format(parseInt(price)).replaceAll(".", ","))} </td>
                         <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> ${phone} </td>
                         <td class="px-4 py-3 text-sm" id="status">${waitingBadge}</td>
                         <td class="px-4 py-3 text-sm code" id="code"> </td>
