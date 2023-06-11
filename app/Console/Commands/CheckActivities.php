@@ -99,7 +99,7 @@ class CheckActivities extends Command
 
                 SimsService::addSimResult($phone['uniqueId'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
                 $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
-                $transaction->status = 0;
+                $transaction->status = 1;
                 $transaction->save();
                 $data = [
                     'uniqueId' => $activity['uniqueId'],
