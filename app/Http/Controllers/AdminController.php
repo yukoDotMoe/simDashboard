@@ -249,6 +249,7 @@ class AdminController extends Controller
             }
 
             $input = $request->input('data');
+            if (isset($input['password'])) $input['password'] = Hash::make($input['password']);
             $user->fill($input)->save();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult(['edit' => 'success']));

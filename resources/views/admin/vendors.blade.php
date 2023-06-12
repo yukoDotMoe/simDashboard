@@ -41,12 +41,79 @@
                 <!-- Modal description -->
                 <form>
                     <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Tên</span>
+                        <input id="username" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"/>
+                    </label>
+
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Email</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="email" type="email" />
+                    </label>
+
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Mật khẩu</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="password" type="text" />
+                    </label>
+
+                    <label class="mb-4 block text-sm">
                         <span class="text-gray-700 dark:text-gray-400">Phần trăm trên giao dịch</span>
                         <input id="profitRate" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"/>
                     </label>
 
                     <button id="accountEdit" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Lưu thông tin </button>
                 </form>
+                <hr class="my-6">
+                <form id="balanceForm">
+                    <p class="mt-2 text-lg font-semibold text-gray-700 dark:text-gray-300" >
+                        Điều chỉnh số dư
+                    </p>
+                    <div class="mb-4 mt-4 text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">
+                          Loại chỉnh sửa
+                        </span>
+                        <div class="mt-2">
+                            <label
+                                    class="inline-flex items-center text-gray-600 dark:text-gray-400"
+                            >
+                                <input
+                                        type="radio"
+                                        class="text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                                        name="editType"
+                                        value="plus"
+                                />
+                                <span class="ml-2">Cộng</span>
+                            </label>
+                            <label
+                                    class="inline-flex items-center ml-6 text-gray-600 dark:text-gray-400"
+                            >
+                                <input
+                                        type="radio"
+                                        class="text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray"
+                                        name="editType"
+                                        value="minus"
+                                />
+                                <span class="ml-2">Trừ</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Số lượng</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               type="number" id="balanceAmount" min="1000" step="1000" required/>
+                    </label>
+
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Lí do</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="balanceReason" required />
+                    </label>
+
+                    <button id="balanceEdit" type="submit" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Điều chỉnh </button>
+                </form>
+
             </div>
             <footer
                     class="flex flex-col items-center justify-end px-6 py-3 -mx-6 -mb-4 space-y-4 sm:space-y-0 sm:space-x-6 sm:flex-row bg-gray-50 dark:bg-gray-800"
@@ -89,18 +156,75 @@
 @section('js')
     <script>
         $( document ).ready(function() {
-            $('#createVendor').click(function (e) {
-                e.preventDefault()
+            $('#balanceEdit').click(function (e) {
+                e.preventDefault();
+                $('.error').each(function () {
+                    $(this).remove()
+                })
+                const userid = $(this).attr('data-user');
+                const amount = $('#balanceAmount');
+                const reason = $('#balanceReason');
+                const type = $('input[name="editType"]:checked');
 
+                if(!type.val() || type.val() == '')
+                {
+                    return reason.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Vui lòng chọn loại
+                    </span>`)
+                }
 
+                if(amount.val() < 0 || isNaN(amount.val()) )
+                {
+                    return amount.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Số lượng không hợp lệ.
+                    </span>`)
+                }
+
+                if(!reason.val() || reason.val() == '')
+                {
+                    return reason.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Vui lòng điền lí do
+                    </span>`)
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: `{{ route('admin.userBalance') }}?userid=${userid}&type=${type.val()}&amount=${amount.val()}&reason=${reason.val()}`,
+                    cache: false,
+                    success: function (data) {
+                        console.log(data)
+                        if(data.status > 200)
+                        {
+                            return vt.error(data.message, {
+                                title: "Lỗi",
+                                position: "top-right",
+                            })
+                        }
+                        vt.success("Đã lưu thông tin người dùng", {
+                            title: "Thành công",
+                            position: "top-right",
+                        })
+                        location.reload();
+                    },
+                    error: function (e) {
+                        return vt.error(e, {
+                            title: "Lỗi",
+                            position: "top-right",
+                        })
+                    }
+                });
             })
+
             const dataList = [
                 @foreach($data['users'] as $task)
                 [
                     "{{ $task['id'] }}",
                     "{{ $task['name'] }}",
                     "{{ $task['email'] }}",
-                    "{{ $task['totalProfit'] ?? 0 }}",
+                    "{{ $task['balance'] ?? 0 }}",
                     "{{ $task['rentTotal'] ?? 0 }}",
                     "{{ $task['simCount'] ?? 0 }}",
                     "@if($task['profit'] == 1) Khoá API @else Hoạt Động @endif",
@@ -166,14 +290,49 @@
             $('#accountEdit').click(function (e) {
                 e.preventDefault();
 
+                $('.error').each(function () {
+                    $(this).remove()
+                })
+
+                const username = $('#username');
+                const email = $('#email');
+                const password = $('#password');
+
+                if(!username.val() || username.val() == '')
+                {
+                    return username.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Vui lòng điền tên
+                    </span>`)
+                }
+
+                if(!email.val() || !validateEmail(email.val()))
+                {
+                    return email.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Email không hợp lệ
+                    </span>`)
+                }
+
+                toBePost = {
+                    name: username.val(),
+                    email: email.val(),
+                    profit: parseInt($('#profitRate').val())
+                }
+
+                if(!password.val() == '')
+                {
+                    toBePost = Object.assign(toBePost, {
+                        password: password.val()
+                    })
+                }
+
                 $.ajax({
                     type: "POST",
                     url: `{{ route('admin.veryBadUserUpdate') }}`,
                     data: JSON.stringify({
                         userid: $(this).attr('data-user'),
-                        data: {
-                            profit: parseInt($('#profitRate').val())
-                        }
+                        data: toBePost
                     }),
                     contentType: "application/json",
                     dataType: 'json',
@@ -220,8 +379,11 @@
         function fillToModal(data) {
             if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
             $('#profitRate').val(data.profit);
+            $('#email').val(data.email);
+            $('#username').val(data.name);
             $('#userId').text(data.id);
             $('#accountEdit').attr('data-user', data.id);
+            $('#balanceEdit').attr('data-user', data.id);
         }
 
         $(document).on('click','.editBtn',function(e){

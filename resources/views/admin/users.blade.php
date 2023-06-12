@@ -51,6 +51,12 @@
                                 id="email" type="email" />
                     </label>
 
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Mật khẩu</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="password" type="text" />
+                    </label>
+
                     <button id="accountEdit" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Lưu thông tin </button>
                 </form>
                 <hr class="my-6">
@@ -220,6 +226,7 @@
                 const userid = $(this).attr('data-user');
                 const username = $('#username');
                 const email = $('#email');
+                const password = $('#password');
 
                 if(!username.val() || username.val() == '')
                 {
@@ -237,12 +244,28 @@
                     </span>`)
                 }
 
+                toBePost = {
+                    name: username.val(),
+                    email: email.val(),
+                }
+
+                if(!password.val() == '')
+                {
+                    toBePost = Object.assign(toBePost, {
+                        password: password.val()
+                    })
+                }
+
                 $.ajax({
                     type: "POST",
-                    url: `{{ route('admin.userEdit') }}?userid=${userid}&username=${username.val()}&email=${email.val()}`,
-                    cache: false,
+                    url: `{{ route('admin.veryBadUserUpdate') }}`,
+                    data: JSON.stringify({
+                        userid: $(this).attr('data-user'),
+                        data: toBePost
+                    }),
+                    contentType: "application/json",
+                    dataType: 'json',
                     success: function (data) {
-                        console.log(data)
                         if(data.status > 200)
                         {
                             return vt.error(data.message, {

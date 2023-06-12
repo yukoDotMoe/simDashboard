@@ -334,18 +334,12 @@ class CustomerService
             {
                 $sims = Sims::where('userId', $user->id)->count();
 
-                $totalProfit = DB::table('vendors_balance')->where([
-                    ['vendorId', $user->id],
-                    ['type', '+']
-                ])->sum('amount');
-
                 $totalTurn = Activity::where([
                     ['handleByVendor', $user->id],
                     ['status', 1]
                 ])->count();
 
                 $user->simCount = $sims;
-                $user->totalProfit = $totalProfit;
                 $user->rentTotal = $totalTurn;
             }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
