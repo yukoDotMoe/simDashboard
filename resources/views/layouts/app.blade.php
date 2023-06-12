@@ -110,6 +110,20 @@
             }
         });
 
+        @if(Session::has('success'))
+        vt.success('{{ session('success') }}', {
+            title: "Success",
+            position: "top-right",
+        })
+        @endif
+
+        @if(Session::has('error'))
+        vt.error('{{ session('error') }}', {
+            title: "Error",
+            position: "top-right",
+        })
+        @endif
+
         var failedBadge = `
             <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
                 Timeout

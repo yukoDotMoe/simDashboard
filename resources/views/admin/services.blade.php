@@ -224,6 +224,48 @@
 
 @section('js')
     <script>
+        function validateRegex(pattern) {
+            var parts = pattern.split('/'),
+                regex = pattern,
+                options = "";
+            if (parts.length > 1) {
+                regex = parts[1];
+                options = parts[2];
+            }
+            try {
+                new RegExp(regex, options);
+                return true;
+            }
+            catch(e) {
+                return false;
+            }
+        }
+        let first = true;
+        let regexError = false;
+        $(document).on('keyup change','#structure',function(e) {
+            result = validateRegex($(this).val())
+            if(!result)
+            {
+                if(!first && regexError) {
+                    return 0
+                }else{
+                    $(this).removeAttr('class');
+                }
+                $(this).attr('class', 'block w-full mt-1 text-sm border-red-600 dark:text-gray-300 dark:bg-gray-700 focus:border-red-400 focus:outline-none focus:shadow-outline-red form-input');
+                $(this).parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 errors">
+                      Regex có thể sai hoặc không hoạt động, bạn vui lòng kiểm tra kĩ
+                    </span>`)
+                regexError = true
+                first = false
+            }else{
+                first = true
+                $(this).removeAttr('class');
+                $(this).attr('class', 'block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input')
+                $('.errors').remove()
+            }
+        })
+
         $( document ).ready(function() {
             function fillToModal(data) {
                 if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
@@ -286,7 +328,7 @@
                                 position: "top-right",
                             })
                         }
-                        vt.success("Đã lưu thông tin người dùng", {
+                        vt.success("Đã lưu thông tin dịch vụ", {
                             title: "Thành công",
                             position: "top-right",
                         })
@@ -304,7 +346,7 @@
             $('.delete').click(function (e) {
                 e.preventDefault();
                 const simId = $(this).attr('data-sim');
-                var x = window.confirm("Bạn có chắc muốn xoá sim này?");
+                var x = window.confirm("Bạn có chắc muốn xoá dịch vụ này?");
                 if(!x) return false;
                 $.ajax({
                     type: "POST",
@@ -318,7 +360,7 @@
                                 position: "top-right",
                             })
                         }
-                        vt.success("Đã xoá sim thành công", {
+                        vt.success("Đã xoá dịch vụ thành công", {
                             title: "Thành công",
                             position: "top-right",
                         })

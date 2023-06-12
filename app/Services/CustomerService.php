@@ -443,6 +443,11 @@ class CustomerService
             {
                 Sims::whereIn('uniqueId', $data)->update(['status' => 0]);
             }
+
+            if ($action == 'delete')
+            {
+                Sims::whereIn('uniqueId', $data)->delete();
+            }
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
@@ -617,7 +622,7 @@ class CustomerService
         }
     }
 
-    public function updateService(string $uniqueId, string $status = null, int $price = null, int $limit, int $success, int $fail, int $cooldown, string $structure, string $valid, bool $delete = false)
+    public function updateService($uniqueId, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid, $delete = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');

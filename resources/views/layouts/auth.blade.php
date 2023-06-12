@@ -25,5 +25,21 @@
         </div>
     </div>
 </div>
+<script src="{{ asset('/assets/js/vanilla-toast.min.js') }}" type="text/javascript"></script>
+<script>
+    @if(Session::has('success'))
+    vt.success('{{ session('success') }}', {
+        title: "Success",
+        position: "top-right",
+    })
+    @endif
+
+    @if(Session::has('error'))
+    vt.error('{{ session('error') }}', {
+        title: "Error",
+        position: "top-right",
+    })
+    @endif
+</script>
 </body>
 </html>

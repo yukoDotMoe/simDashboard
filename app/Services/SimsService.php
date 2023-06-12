@@ -588,6 +588,7 @@ class SimsService
                     if ($vendor)
                     {
                         $vendorRow = User::where('id', $vendorId)->first();
+                        $vendorRow->increment('balance', ($service['price'] * $vendorRow->profit) / 100);
                         DB::table('vendors_balance')->insert([
                             'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
                             'vendorId' => $vendorId,

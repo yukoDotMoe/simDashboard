@@ -71,20 +71,20 @@ return [
             ]
         ],
 
-//        'customRent' => [
-//            'active' => true,
-//            'icon' => '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"></path></svg>',
-//            'name' => 'Custom Rent',
-//            'redirect' => 'customRent',
-//            'singleLink' => false,
-//            'dropdown' => false,
-//            'dropdownContent' => [
-//                [
-//                    'link' => '',
-//                    'name' => ''
-//                ],
-//            ]
-//        ],
+        'customRent' => [
+            'active' => false,
+            'icon' => '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"></path></svg>',
+            'name' => 'Custom Rent',
+            'redirect' => 'customRent',
+            'singleLink' => false,
+            'dropdown' => false,
+            'dropdownContent' => [
+                [
+                    'link' => '',
+                    'name' => ''
+                ],
+            ]
+        ],
 
         'rentHistory' => [
             'active' => true,
@@ -113,6 +113,28 @@ return [
 </svg>',
             'name' => 'API Documents',
             'redirect' => 'apiDocs',
+            'singleLink' => false,
+            'dropdown' => false,
+            'dropdownContent' => [
+                [
+                    'link' => '',
+                    'name' => ''
+                ],
+            ]
+        ],
+
+        'border3' => [
+            'separator' => true,
+            'name' => 'Accounts'
+        ],
+
+        'accounts' => [
+            'active' => true,
+            'icon' => '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"></path>
+</svg>',
+            'name' => 'Settings',
+            'redirect' => 'accounts',
             'singleLink' => false,
             'dropdown' => false,
             'dropdownContent' => [

@@ -24,7 +24,9 @@ class User extends Authenticatable
         'balance',
         'phoneNumber',
         'api_token',
-        'totalRent'
+        'totalRent',
+        'profit',
+        'tier'
     ];
 
     /**

@@ -7,10 +7,12 @@ use App\Services\ApiService;
 use App\Services\CustomerService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Auth;
+use Session;
 
 class UsersController extends Controller
 {
@@ -20,6 +22,11 @@ class UsersController extends Controller
     {
         $this->customerService = $customerService;
         $this->apiService = $apiService;
+    }
+
+    public function accountView()
+    {
+        return view('account');
     }
 
     public function balanceView()
@@ -245,5 +252,36 @@ class UsersController extends Controller
                 )
             );
         }
+    }
+
+    public function logout()
+    {
+        Session::flush();
+        Auth::logout();
+        return redirect('login')->with('success', 'Password changed successfully. Please login again');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->with('error', $validator->errors()->first());
+        }
+
+        #Match The Old Password
+        if(!Hash::check($request->current_password, auth()->user()->password)){
+            return back()->with("error", "Old Password Doesn't match!");
+        }
+
+        User::whereId(auth()->user()->id)->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return $this->logout();
+//        return redirect()->route('accounts')->with('success', 'Password change successfully. Please login again');
     }
 }

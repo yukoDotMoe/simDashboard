@@ -12,7 +12,10 @@ use App\Services\NetworkService;
 use App\Services\ServiceService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -227,6 +230,99 @@ class AdminController extends Controller
         }
     }
 
+    public function veryBadUserUpdate(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $uid = $request->userid;
+            $user = User::findOrFail($uid);
+
+            if (empty($user))
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        'Cannot find user'
+                    )
+                );
+            }
+
+            $input = $request->input('data');
+            $user->fill($input)->save();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult(['edit' => 'success']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+    public function ban(Request $request)
+    {
+        try {
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $type = $request->objType;
+            $id = $request->objId;
+
+            switch ($type)
+            {
+                case (0):
+                    $selector = User::findOrFail($id);
+                    break;
+                case (1):
+                    $selector = Sims::findOrFail($id);
+                    break;
+                case (2):
+                    $selector = Service::findOrFail($id);
+                    break;
+                case (3):
+                    $selector = Network::findOrFail($id);
+                    break;
+                default:
+                    $selector = User::findOrFail($id);
+            }
+            if ($type == 0)
+            {
+                $selector->tier = -1;
+                $selector->lock_api = true;
+                $selector->save();
+            }else{
+                $selector->delete();
+            }
+            if (empty($selector))
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        'Cannot find objects'
+                    )
+                );
+            }
+
+            $input = $request->input('data');
+            $user->fill($input)->save();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult(['edit' => 'success']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
     public function updateSimInfo(Request $request)
     {
         try {
@@ -320,7 +416,7 @@ class AdminController extends Controller
             $cooldown = $request->query('cooldown');
             $structure = $request->query('structure');
             $valid = $request->query('valid');
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $name . ' - ' . $price);
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             $result = $this->serviceService->create($name, $price, $limit, $success, $fail, $cooldown, $structure, $valid);
             if ($result['status'] == 0) {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $result['error']);
@@ -503,5 +599,48 @@ class AdminController extends Controller
                 )
             );
         }
+    }
+
+    public function vendorCreate()
+    {
+        return view('admin.vendorsCreate');
+    }
+
+    public function vendorCreatePost(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|alpha_dash|unique:users,name',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:10',
+            'profit' => 'required|integer|min:1|max:100'
+        ]);
+
+        if ($validator->fails()) {
+            Log::info($validator->fails());
+            return redirect()->route('admin.vendors.create')->with('error', 'Thông tin không hợp lệ: ' . $validator->errors()->first());
+        }
+
+        $username = $request->username;
+        $email = $request->email;
+        $password = $request->password;
+        $profit = $request->profit;
+
+        $user = User::create([
+            'name' => $username,
+            'email' => $email,
+            'password' => Hash::make($password),
+            'profit' => $profit,
+            'api_token' => Str::random(80),
+            'tier' => 10,
+            'balance' => 0,
+            'lock_api' => false
+        ])->id;
+
+        if (empty($user))
+        {
+            return redirect()->route('admin.vendors.create')->with('error', 'Không thể tạo người dùng mới');
+        }
+
+        return redirect()->route('admin.vendors')->with('success', 'Tạo thành công đại lí với id ' . $user);
     }
 }

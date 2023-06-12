@@ -107,6 +107,10 @@
             <button data-type="lock" class="action px-3 py-1 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-md active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
                 Khoá tất cả sim đã chọn
             </button>
+
+            <button data-type="delete" class="action px-3 py-1 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-red-600 border border-transparent rounded-md active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                Xoá tất cả sim đã chọn
+            </button>
         </div>
     </div>
 
@@ -220,6 +224,39 @@
             }
             return value;
         }
+
+        $(document).on('click','.delete',function(e){
+            e.preventDefault();
+            const simId = $(this).attr('data-sim');
+            var x = window.confirm("Bạn có chắc muốn xoá sim này?");
+            if(!x) return false;
+            $.ajax({
+                type: "POST",
+                url: `{{ route('admin.simEdit') }}?id=${simId}&delete=1`,
+                cache: false,
+                success: function (data) {
+                    console.log(data)
+                    if(data.status > 200)
+                    {
+                        return vt.error(data.message, {
+                            title: "Lỗi",
+                            position: "top-right",
+                        })
+                    }
+                    vt.success("Đã xoá sim thành công", {
+                        title: "Thành công",
+                        position: "top-right",
+                    })
+                    location.reload();
+                },
+                error: function (e) {
+                    return vt.error(e, {
+                        title: "Lỗi",
+                        position: "top-right",
+                    })
+                }
+            });
+        })
 
         $(document).on('click','.delete-locked-item',function(e){
             e.preventDefault()
@@ -359,39 +396,6 @@
                             })
                         }
                         vt.success("Đã lưu thông tin người dùng", {
-                            title: "Thành công",
-                            position: "top-right",
-                        })
-                        location.reload();
-                    },
-                    error: function (e) {
-                        return vt.error(e, {
-                            title: "Lỗi",
-                            position: "top-right",
-                        })
-                    }
-                });
-            })
-
-            $('.delete').click(function (e) {
-                e.preventDefault();
-                const simId = $(this).attr('data-sim');
-                var x = window.confirm("Bạn có chắc muốn xoá sim này?");
-                if(!x) return false;
-                $.ajax({
-                    type: "POST",
-                    url: `{{ route('admin.simEdit') }}?id=${simId}&delete=1`,
-                    cache: false,
-                    success: function (data) {
-                        console.log(data)
-                        if(data.status > 200)
-                        {
-                            return vt.error(data.message, {
-                                title: "Lỗi",
-                                position: "top-right",
-                            })
-                        }
-                        vt.success("Đã xoá sim thành công", {
                             title: "Thành công",
                             position: "top-right",
                         })

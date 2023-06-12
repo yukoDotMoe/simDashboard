@@ -20,20 +20,38 @@
                     <input id="price" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" type="number" min="1000" required>
                 </label>
 
+            <div class="border-2 p-3 rounded-lg" id="valueDiv">
                 <label class="mb-4 block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">Khoá SIM sau X lượt dùng</span>
-                    <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                           id="useCount" type="number" placeholder="-1 để không giới hạn lượt dùng" value="-1" required />
-                    <span class="text-xs text-gray-600 dark:text-gray-400">
-                              Nhập <strong>-1</strong> để không giới khoá
-                            </span>
+                    <strong>Kiểm tra dựa trên số liệu</strong>
+                    <p class="text-xs text-gray-600 dark:text-gray-200">
+                        Khoá SIM sử dụng dịch vụ dưa trên điều kiện. Nhập <strong>-1</strong> để <strong>bỏ kiểm tra</strong> phần bạn không muốn dùng.
+                    </p>
                 </label>
 
-                <label class="mb-4 block text-sm hidden" id="cooldown-div">
+                <label class="mb-4 block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Lượt dùng</span>
+                    <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                           id="useCount" value="-1" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                </label>
+
+                <label class="mb-4 block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Thành công</span>
+                    <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                           id="success" value="-1" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                </label>
+
+                <label class="mb-4 block text-sm">
+                    <span class="text-gray-700 dark:text-gray-400">Thất bại</span>
+                    <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                           id="fail" value="-1" type="number" placeholder="-1 để không giới hạn lượt dùng" required />
+                </label>
+
+                <label class="mb-4 block text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Mở lại SIM sau khi bị khoá (giờ)</span>
                     <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                           id="cooldown" min="1" value="1" type="number" required />
+                           min=1 value="1" id="cooldown" type="number" required />
                 </label>
+            </div>
 
                 <label class="block mt-4 text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Regex lấy code</span>
@@ -43,8 +61,8 @@
 
                 <label class="block mt-4 text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Kiểm tra cấu trúc</span>
-                    <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                           id="checkValid" type="text" required />
+                    <textarea style=" white-space: pre-wrap" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-textarea focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray" rows="3"
+                              id="checkValid"></textarea>
                 </label>
 
                 <button id="createService" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
@@ -63,14 +81,26 @@
                 const name = $('#serviceName').val();
                 const price = $('#price').val();
                 const limit = $('#useCount').val();
+                const success = $('#success').val();
+                const fail = $('#fail').val();
                 const cooldown = $('#cooldown').val();
                 const structure = $('#structure').val();
-                const checkValid = $('#checkValid').val();
+                const checkValid = encodeURIComponent($('#checkValid').val());
 
+                const params = new URLSearchParams({
+                    name: name,
+                    price: price,
+                    limit: parseInt(limit),
+                    success: parseInt(success),
+                    fail: parseInt(fail),
+                    cooldown: parseInt(cooldown),
+                    structure: structure,
+                    valid: checkValid,
+                });
 
                 $.ajax({
                     type: "POST",
-                    url: `{{ route('admin.createServicePost') }}?name=${name}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}`,
+                    url: `{{ route('admin.createServicePost') }}?${params.toString()}`,
                     cache: false,
                     success: function (data) {
                             if(data.status > 200)
@@ -93,15 +123,6 @@
                         })
                     }
                 });
-            })
-
-            $('#useCount').on('keyup change', function(){
-                if($(this).val() >= 1 ) {
-                    $('#cooldown-div').removeClass('hidden')
-                }else{
-                    if($(this).val() < -1) $(this).val(-1)
-                    $('#cooldown-div').addClass('hidden')
-                }
             })
         });
     </script>

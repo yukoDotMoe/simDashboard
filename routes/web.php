@@ -42,14 +42,23 @@ Route::group([
     Route::get('/apiDocs', [\App\Http\Controllers\UsersController::class, 'apiDoc'])->name('apiDocs');
     Route::post('/resetToken', [\App\Http\Controllers\UsersController::class, 'resetToken'])->name('resetToken');
 
+    Route::get('/accounts', [\App\Http\Controllers\UsersController::class, 'accountView'])->name('accounts');
+    Route::post('/changePassword', [\App\Http\Controllers\UsersController::class, 'changePassword'])->name('accounts.changePass');
+
     Route::group([
         'middleware' => ['admin']
     ], function (){
         Route::get('/admin/users', [\App\Http\Controllers\AdminController::class, 'adminUsersView'])->name('admin.users');
+
         Route::get('/admin/vendors', [\App\Http\Controllers\AdminController::class, 'adminVendorsView'])->name('admin.vendors');
+        Route::get('/admin/vendors/create', [\App\Http\Controllers\AdminController::class, 'vendorCreate'])->name('admin.vendors.create');
+        Route::post('/admin/vendors/create', [\App\Http\Controllers\AdminController::class, 'vendorCreatePost'])->name('admin.vendors.create.post');
+
+
         Route::post('/admin/users/{id}', [\App\Http\Controllers\AdminController::class, 'getUser'])->name('admin.user');
         Route::post('/admin/balance/edit', [\App\Http\Controllers\AdminController::class, 'editBal'])->name('admin.userBalance');
         Route::post('/admin/user/edit', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.userEdit');
+        Route::post('/admin/user/veryBadUserUpdate', [\App\Http\Controllers\AdminController::class, 'veryBadUserUpdate'])->name('admin.veryBadUserUpdate');
 
         Route::get('/admin/sims', [\App\Http\Controllers\AdminController::class, 'adminSimsView'])->name('admin.sims');
         Route::post('/admin/sims/{id}', [\App\Http\Controllers\AdminController::class, 'getSim'])->name('admin.sim');
@@ -57,6 +66,7 @@ Route::group([
         Route::post('/admin/sim/edit', [\App\Http\Controllers\AdminController::class, 'updateSimInfo'])->name('admin.simEdit');
         Route::post('/admin/sim/removeLockedService', [\App\Http\Controllers\AdminController::class, 'removeLockedService'])->name('admin.removeLockedService');
         Route::post('/admin/sim/bulk', [\App\Http\Controllers\AdminController::class, 'bulkEdit'])->name('admin.bulkEdit');
+        Route::post('/admin/object/ban', [\App\Http\Controllers\AdminController::class, 'ban'])->name('admin.ban');
 
         Route::get('/admin/services', [\App\Http\Controllers\AdminController::class, 'adminServicesView'])->name('admin.services');
         Route::get('/admin/create/service', [\App\Http\Controllers\AdminController::class, 'serviceCreate'])->name('admin.createService');
