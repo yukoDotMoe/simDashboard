@@ -172,7 +172,7 @@
                         <td class="px-4 py-3 text-sm">{{ $task['id'] }}</td>
                         <td class="px-4 py-3 text-sm @if($task['admin']) text-purple-600 font-bold @endif">{{ $task['name'] }}</td>
                         <td class="px-4 py-3 text-sm">{{ $task['email'] }}</td>
-                        <td class="px-4 py-3 text-sm">@if($task['tier'] < 0) Bị khoá @else Hoạt động @endif</td>
+                        <td class="px-4 py-3 text-sm">@if($task['ban'] == 1) Bị khoá @else Hoạt động @endif</td>
                         <td class="px-4 py-3 text-sm">{{ $task['phoneNumber'] ?? 'Trống' }}</td>
                         <td class="px-4 py-3 text-sm">{{ number_format($task['balance'], 0, '', ',') }} VND</td>
                         <td class="px-4 py-3 text-sm">{{ $task['totalRent'] }}</td>

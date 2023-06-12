@@ -98,7 +98,7 @@ class ApiService
                 'error' => 'API Key not found'
             ];
 
-            if ($user['tier'] < 0) return [
+            if ($user['ban'] == 1) return [
                 'status' => 0,
                 'error' => 'Your account has been banned. Please contact administrator'
             ];

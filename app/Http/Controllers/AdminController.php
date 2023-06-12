@@ -291,7 +291,7 @@ class AdminController extends Controller
             }
             if ($type == 0)
             {
-                $selector->tier = -1;
+                $selector->ban = true;
                 $selector->lock_api = true;
                 $selector->save();
             }else{
@@ -308,8 +308,8 @@ class AdminController extends Controller
                 );
             }
 
-            $input = $request->input('data');
-            $user->fill($input)->save();
+//            $input = $request->input('data');
+//            $user->fill($input)->save();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult(['edit' => 'success']));
         } catch (Exception $e) {

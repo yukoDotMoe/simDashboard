@@ -224,10 +224,10 @@
                     "{{ $task['id'] }}",
                     "{{ $task['name'] }}",
                     "{{ $task['email'] }}",
-                    "{{ $task['balance'] ?? 0 }}",
+                    "{{ number_format($task['balance'], 0, '', ',') ?? 0 }}",
                     "{{ $task['rentTotal'] ?? 0 }}",
                     "{{ $task['simCount'] ?? 0 }}",
-                    "@if($task['profit'] == 1) Khoá API @else Hoạt Động @endif",
+                    "@if($task['ban'] == 1) Khoá @else Hoạt Động @endif",
 {{--                    "{{ $task['created_at'] }}",--}}
                     gridjs.html(`
                     <div class="flex items-center space-x-4 text-sm">

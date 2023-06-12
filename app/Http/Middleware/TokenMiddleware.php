@@ -6,6 +6,7 @@ use App\Models\User;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TokenMiddleware
@@ -31,6 +32,11 @@ class TokenMiddleware
                 $token = $request->token;
                 if ($token == config('simConfig.adminToken')) return $next($request);
                 $user = User::where('api_token', $token)->first();
+                if ($user['ban'] == 1 || $user['lock_api'] == 1)
+                {
+                    Auth::logout();
+                    return redirect('/login')->with('error', 'Your account has been ban.');
+                }
                 if ($user['tier'] > 10) return response([
                     'status' => 401,
                     'success' => false,

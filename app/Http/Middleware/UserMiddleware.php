@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserMiddleware
 {
@@ -17,6 +18,11 @@ class UserMiddleware
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
+        if ($user['ban'] == 1)
+        {
+            Auth::logout();
+            return redirect('/login')->with('error', 'Your account has been ban.');
+        }
         if ($user['tier'] >= 10) {
             if ($request->route()->getName() == 'dashboard') return redirect()->route('vendor.dashboard');
             return response([

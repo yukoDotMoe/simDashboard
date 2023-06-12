@@ -26,7 +26,8 @@ class User extends Authenticatable
         'api_token',
         'totalRent',
         'profit',
-        'tier'
+        'tier',
+        'ban'
     ];
 
     /**
