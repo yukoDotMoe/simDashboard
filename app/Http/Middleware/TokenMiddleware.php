@@ -37,7 +37,7 @@ class TokenMiddleware
                     Auth::logout();
                     return redirect('/login')->with('error', 'Your account has been ban.');
                 }
-                if ($user['tier'] > 10) return response([
+                if ($user['tier'] >= 10) return response([
                     'status' => 401,
                     'success' => false,
                     'message' => 'You cannot use this function as an vendor',
