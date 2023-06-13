@@ -157,7 +157,6 @@
                     <th class="px-4 py-3">ID</th>
                     <th class="px-4 py-3">Tên</th>
                     <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3">Cấp Tài Khoản</th>
                     <th class="px-4 py-3">Số Điện Thoại</th>
                     <th class="px-4 py-3">Số Dư</th>
                     <th class="px-4 py-3">Số Lần Thuê</th>
@@ -170,13 +169,12 @@
                 @foreach($data['users'] as $task)
                     <tr class="text-gray-700 dark:text-gray-400">
                         <td class="px-4 py-3 text-sm">{{ $task['id'] }}</td>
-                        <td class="px-4 py-3 text-sm @if($task['admin']) text-purple-600 font-bold @endif">{{ $task['name'] }}</td>
+                        <td class="px-4 py-3 text-sm @if($task['ban'] == 1) text-red-700 @else @if($task['admin']) text-purple-600 font-bold @endif @endif">{{ $task['name'] }}</td>
                         <td class="px-4 py-3 text-sm">{{ $task['email'] }}</td>
-                        <td class="px-4 py-3 text-sm">@if($task['ban'] == 1) Bị khoá @else Hoạt động @endif</td>
                         <td class="px-4 py-3 text-sm">{{ $task['phoneNumber'] ?? 'Trống' }}</td>
                         <td class="px-4 py-3 text-sm">{{ number_format($task['balance'], 0, '', ',') }} VND</td>
                         <td class="px-4 py-3 text-sm">{{ $task['totalRent'] }}</td>
-                        <td class="px-4 py-3 text-sm">Hoạt Động</td>
+                        <td class="px-4 py-3 text-sm">@if($task['ban'] == 1) Bị khoá @else Hoạt động @endif</td>
                         <td class="px-4 py-3 text-sm">{{ $task['created_at']}}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center space-x-4 text-sm">
@@ -185,11 +183,19 @@
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                                     </svg>
                                 </button>
-                                <button data-user="{{ $task['id'] }}" class="delete flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Delete">
-                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </button>
+                                @if($task['ban'] == 1)
+                                    <button data-user="{{ $task['id'] }}" class="restore flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Delete">
+                                        <svg class="w-5 h-5" stroke="currentColor" fill="white" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+                                        </svg>
+                                    </button>
+                                @else
+                                    <button data-user="{{ $task['id'] }}" class="delete flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Delete">
+                                        <svg class="w-5 h-5" stroke="currentColor" fill="white" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+                                        </svg>
+                                    </button>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -384,7 +390,7 @@
 
         $(document).on('click','.delete',function(e){
             e.preventDefault();
-            var x = window.confirm("Bạn có chắc muốn xoá người dùng này?");
+            var x = window.confirm("Bạn có chắc muốn khoá người dùng này?");
             if(!x) return false;
             $.ajax({
                 type: "POST",
@@ -397,7 +403,6 @@
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
-                    console.log(data)
                     if(data.status > 200)
                     {
                         return vt.error(data.message, {
@@ -405,7 +410,45 @@
                             position: "top-right",
                         })
                     }
-                    vt.success("Đã xoá sim thành công", {
+                    vt.success("Đã khoá người dùng thành công", {
+                        title: "Thành công",
+                        position: "top-right",
+                    })
+                    location.reload();
+                },
+                error: function (e) {
+                    return vt.error(e, {
+                        title: "Lỗi",
+                        position: "top-right",
+                    })
+                }
+            });
+        })
+
+        $(document).on('click','.restore',function(e){
+            e.preventDefault();
+            var x = window.confirm("Bạn có chắc muốn bỏ khoá người dùng này?");
+            if(!x) return false;
+            $.ajax({
+                type: "POST",
+                url: `{{ route('admin.ban') }}`,
+                data: JSON.stringify({
+                    objType: 0,
+                    objId: $(this).attr('data-user'),
+                    unban: 1
+                }),
+                contentType: "application/json",
+                dataType: 'json',
+                cache: false,
+                success: function (data) {
+                    if(data.status > 200)
+                    {
+                        return vt.error(data.message, {
+                            title: "Lỗi",
+                            position: "top-right",
+                        })
+                    }
+                    vt.success("Đã hồi sinh người dùng thành công", {
                         title: "Thành công",
                         position: "top-right",
                     })

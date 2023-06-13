@@ -278,24 +278,35 @@ class AdminController extends Controller
                     $selector = User::findOrFail($id);
                     break;
                 case (1):
-                    $selector = Sims::findOrFail($id);
+                    $selector = ($request->has('unban')) ? Sims::withTrashed()->findOrFail($id) : Sims::findOrFail($id);
                     break;
                 case (2):
-                    $selector = Service::findOrFail($id);
+                    $selector = ($request->has('unban')) ? Service::withTrashed()->findOrFail($id) : Service::findOrFail($id);
                     break;
                 case (3):
-                    $selector = Network::findOrFail($id);
+                    $selector = ($request->has('unban')) ? Network::withTrashed()->findOrFail($id) : Network::findOrFail($id);
                     break;
                 default:
                     $selector = User::findOrFail($id);
             }
             if ($type == 0)
             {
-                $selector->ban = true;
-                $selector->lock_api = true;
+                if (!$request->has('unban'))
+                {
+                    $selector->ban = true;
+                    $selector->lock_api = true;
+                }else{
+                    $selector->ban = false;
+                    $selector->lock_api = false;
+                }
+
                 $selector->save();
             }else{
-                $selector->delete();
+                if (!$request->has('unban')){
+                    $selector->delete();
+                }else{
+                    $selector->restore();
+                }
             }
             if (empty($selector))
             {

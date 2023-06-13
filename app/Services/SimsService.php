@@ -410,22 +410,12 @@ class SimsService
                 $simNumber = str_replace(' ', '', $simNumber);
                 $phoneData = $this->simsRepo->findByPhone($simNumber);
 
-                if (!isset($simData['action']))
-                {
-                    Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Missing action');
-                    $returnVar[$simNumber] = [
-                        'status' => 0,
-                        'data' => 'Missing action'
-                    ];
-                    continue;
-                }
-
                 if (!isset($simData['network']))
                 {
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Missing action');
                     $returnVar[$simNumber] = [
                         'status' => 0,
-                        'data' => 'Missing network'
+                        'error' => 'Missing network'
                     ];
                     continue;
                 }
@@ -440,7 +430,7 @@ class SimsService
                     $network = $this->networkRepo->find($createNetwork['uniqueId']);
                 }
 
-                if (!$phoneData && $simData['action'] == 'create')
+                if (!$phoneData)
                 {
                     DB::beginTransaction();
                     $result = $this->create($simNumber, 84, $network['uniqueId'], $vendor, $vendorId);
@@ -463,7 +453,7 @@ class SimsService
                     continue;
                 }
 
-                if ($phoneData['status'] > 1 && $simData['action'] == 'update')
+                if ($phoneData['status'] > 1)
                 {
                     $activity = $this->activityRepo->findByPhoneAndBusy($simNumber);
                     if(empty($activity))
@@ -610,14 +600,18 @@ class SimsService
                     Sims::where([
                         ['uniqueId', $phoneData['uniqueId']],
                         ['status', 0]
-                    ])->update(['status' => 1, 'networkId' => $network['uniqueId'], 'userid' => $vendorId]);
+                    ])->update([
+                        'status' => 1,
+                        'networkId' => $network['uniqueId'],
+                        'userid' => $vendorId,
+                        'updated_at' => Carbon::now()
+                    ]);
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully ping the number.'
                     ];
                 }
             }
-
             return $returnVar;
         } catch (Exception $e)
         {
@@ -754,8 +748,7 @@ class SimsService
             return [
                 'status' => 1,
                 'data' => [
-                    'phone' => $phone['phone'],
-                    'country' => $phone['countryCode'],
+                    'phone' => '+' . $phone['countryCode'] . $phone['phone'],
                     'balance' => $user->balance - $service['price'],
                     'price' => $service['price'],
                     'name' => $service['serviceName'],
@@ -777,9 +770,12 @@ class SimsService
     public function basicRent(string $token, string $serviceId, string $networkId, bool $api, string $phoneNumber = null)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $phoneNumber);
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $token . ' - '. $serviceId . ' - '. $networkId . ' - '. $api . ' - '. $phoneNumber . ' - ');
             if (!empty($phoneNumber))
             {
+                if (substr($phoneNumber, 0, strlen('84')) == '84') {
+                    $phoneNumber = substr($phoneNumber, strlen('84'));
+                }
                 $phone = $this->simsRepo->findByPhone($phoneNumber);
                 if(!$phone)
                 {

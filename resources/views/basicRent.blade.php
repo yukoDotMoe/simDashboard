@@ -78,7 +78,7 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                             <td class="px-4 py-3 text-sm" id="serviceName"> {{ $task['uniqueId'] }} </td>
                             <td class="px-4 py-3 text-sm" id="serviceName"> {{ $task['serviceName'] }} </td>
                             <td class="px-4 py-3 text-sm" id="servicePrice"> {{ number_format($task['servicePrice'], 0, '', ',') }} </td>
-                            <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> {{ $task['phone'] }} </td>
+                            <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> +{{ $task['countryCode'] . $task['phone'] }} </td>
                             <td class="px-4 py-3 text-sm" id="status">
                                 <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
                                   Waiting

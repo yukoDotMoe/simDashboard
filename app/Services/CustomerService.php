@@ -88,7 +88,7 @@ class CustomerService
                         'id' => $item->uniqueId,
                         'service' => $service->serviceName,
                         'price' => $service->price,
-                        'phone' => $item->phone,
+                        'phone' => '+' . $item->countryCode . $item->phone,
                         'status' => $item->status,
                         'code' => $item->code,
                         'date' => Carbon::parse($item->created_at)->toDateTimeString(),

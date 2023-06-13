@@ -28,7 +28,7 @@ class SimController extends Controller
             $validator = Validator::make($request->all(), [
                 'service' => 'required|bail',
                 'network' => 'required|string',
-                'number' => 'nullable|min:10|max:15|integer',
+                'number' => 'nullable|min:9|max:15',
             ]);
 
             if ($validator->fails()) {
@@ -40,17 +40,16 @@ class SimController extends Controller
                     )
                 );
             }
-
+            $isApi = false;
             if ($request->has('token')) {
                 $user = User::where('api_token', $request->token)->first();
                 $isApi = true;
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
-                $isApi = false;
             }
             $serviceId = $request->service;
             $network = $request->network;
-            $phone = $request->phone;
+            $phone = $request->number;
 
             $result = $this->simsService->basicRent($user->api_token, $serviceId, $network, $isApi, $phone);
 
