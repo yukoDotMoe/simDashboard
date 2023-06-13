@@ -188,8 +188,7 @@ class SimsService
                 'status' => 1,
                 'data' => [
                     'requestId' => $activity['uniqueId'],
-                    'phoneNumber' => $activity['phone'],
-                    'countryCode' => $activity['countryCode'],
+                    'phoneNumber' => '+'. $activity['countryCode'] . $activity['phone'],
                     'serviceId' => $activity['serviceId'],
                     'serviceName' => $service['serviceName'],
                     'status' => $activity['status'],
