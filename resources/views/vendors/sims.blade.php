@@ -5,7 +5,9 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Sim List </h2>
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Sim List <p class="text-xs text-gray-600 dark:text-gray-200">
+            Browse, compare, and select Sims for rent. Build your virtual world today.
+        </p></h2>
     <div
             x-show="isModalOpen"
             x-transition:enter="transition ease-out duration-150"

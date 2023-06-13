@@ -43,14 +43,18 @@
 
     </div>
 
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Transactions </h2>
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Transactions <p class="text-xs text-gray-600 dark:text-gray-200">
+            Track rental transactions easily. Stay updated on payments and rental history in one place.
+        </p></h2>
     <div class="w-full mb-8 overflow-hidden">
         <div class="w-full overflow-x-auto">
             <div id="payments" class="text-center"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
         </div>
     </div>
 
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Requests </h2>
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Requests <p class="text-xs text-gray-600 dark:text-gray-200">
+            View rental history of Sims. Keep track of past rentals and payments with ease.
+        </p></h2>
     <div class="w-full mb-8 overflow-hidden">
         <div class="w-full overflow-x-auto">
             <div id="request" class="text-center"><i class="fa-solid fa-circle-notch fa-spin"></i></div>

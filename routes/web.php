@@ -95,4 +95,9 @@ Route::group([
     Route::post('/sims/{id}', [\App\Http\Controllers\VendorController::class, 'simsActivities'])->name('vendor.sims.activities');
     Route::post('/dashboard/filter', [\App\Http\Controllers\VendorController::class, 'dashboardFilter'])->name('vendor.dashboard.filter');
     Route::post('/sims/filter', [\App\Http\Controllers\VendorController::class, 'simsFilter'])->name('vendor.sims.filter');
+
+    Route::post('/resetToken', [\App\Http\Controllers\UsersController::class, 'resetToken'])->name('vendor.resetToken');
+
+    Route::get('/accounts', [\App\Http\Controllers\VendorController::class, 'accountView'])->name('vendor.accounts');
+    Route::post('/changePassword', [\App\Http\Controllers\UsersController::class, 'changePassword'])->name('vendor.accounts.changePass');
 });

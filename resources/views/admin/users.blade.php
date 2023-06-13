@@ -57,6 +57,30 @@
                                id="password" type="text" />
                     </label>
 
+                    <div class="relative w-full max-w-xl mr-6 focus-within:text-purple-500" >
+                        <div class="absolute inset-y-0 flex items-center pl-2">
+                            <svg
+                                    class="w-4 h-4"
+                                    aria-hidden="true"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                            >
+                                <path
+                                        fill-rule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clip-rule="evenodd"
+                                ></path>
+                            </svg>
+                        </div>
+                        <div class="relative text-gray-500 focus-within:text-purple-600" >
+                            <input class="block w-full pr-20 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input" placeholder="API Token" name="token" id="token" />
+                            <button id="randompass" class="absolute inset-y-0 right-0 px-4 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-r-md active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+                                Ngẫu nhiên
+                            </button>
+                        </div>
+
+                    </div>
+
                     <button id="accountEdit" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"> Lưu thông tin </button>
                 </form>
                 <hr class="my-6">
@@ -210,11 +234,24 @@
 @section('js')
     <script>
         $( document ).ready(function() {
+            $('#randompass').click(function (e) {
+                e.preventDefault()
+
+                var length = 80,
+                    charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                    retVal = "";
+                for (var i = 0, n = charset.length; i < length; ++i) {
+                    retVal += charset.charAt(Math.floor(Math.random() * n));
+                }
+                $('input[name="token"]').val(retVal)
+            })
+
             function fillToModal(data) {
                 if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
                 $('#username').val(data.name);
                 $('#userId').text(data.id);
                 $('#email').val(data.email);
+                $('#token').val(data.api_token);
                 $('#balanceEdit').attr('data-user', data.id);
                 $('#accountEdit').attr('data-user', data.id);
             }
@@ -233,6 +270,15 @@
                 const username = $('#username');
                 const email = $('#email');
                 const password = $('#password');
+                const token = $('#token');
+
+                if(!token.val() || token.val() == '')
+                {
+                    return token.parent().append(`
+                    <span class="text-xs text-red-600 dark:text-red-400 error">
+                      Vui lòng điền token
+                    </span>`)
+                }
 
                 if(!username.val() || username.val() == '')
                 {
@@ -253,6 +299,7 @@
                 toBePost = {
                     name: username.val(),
                     email: email.val(),
+                    api_token: token.val(),
                 }
 
                 if(!password.val() == '')

@@ -96,23 +96,28 @@ class VendorController
         }
     }
 
-    public function simsFilter()
-    {
-        try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+//    public function simsFilter()
+//    {
+//        try {
+//            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+//
+//            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+//            return response()->json(ApiService::returnResult($result['data']));
+//        } catch (Exception $e) {
+//            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+//            return response()->json(
+//                ApiService::returnResult(
+//                    [],
+//                    502,
+//                    $e->getMessage()
+//                )
+//            );
+//        }
+//    }
 
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
-            return response()->json(ApiService::returnResult($result['data']));
-        } catch (Exception $e) {
-            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
-            return response()->json(
-                ApiService::returnResult(
-                    [],
-                    502,
-                    $e->getMessage()
-                )
-            );
-        }
+    public function accountView()
+    {
+        return view('vendors.account');
     }
 
 }
