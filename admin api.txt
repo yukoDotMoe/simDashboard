@@ -1,0 +1,104 @@
+Kiểm tra token
+GET https://vn-otp.com/api/token/check/{token}
+Thành công:
+{
+     "status": "200",
+     "success": true,
+     "message": null,
+     "data": {
+          "userId": 1,
+          "balance": 1,
+          "role": "admin",
+     }
+}
+
+Lỗi:
+{
+     "status": "502",
+     "success": false,
+     "message": "Some error description here",
+     "data": []
+}
+
+---------------------------------------------
+Gửi request với server
+
+POST https://vn-otp.com/api/updateSim
++ body: raw json
++ header: access_token
+
+=====
+Nếu muốn ping số (giữ cho số k bị chuyển sang bảo trì)
+'0237548237' => [
+    'code' => null,
+    'network' => 'Viettel'
+],
+
+Trả code về (nếu sim k ai thuê nhưng vẫn gửi request này nó sẽ chuyển thành ping số)
+hoặc nếu ở trạng thái 2 (đang bận) và không tìm thấy request trong database sẽ chuyển số thành trạng thái 1 (đang rảnh)
+'0237548237' => [
+    'code' => 'noi dung sms',
+    'network' => 'Viettel'
+],
+
+Thêm số mới: bằng cách để key của array là số mới thì hệ thống sẽ tự lưu vào database.
+'0237548237' => [
+    'code' => null,
+    'network' => 'Viettel'
+]
+=====
+
+=====
+Body có thể gửi bao nhiêu request thì tuỳ thích miễn là nằm trong array dưới dạng:
+{
+    "4628995400": {
+        "code": "sdkjlhfksdjhfsdjkhf ma xac nhan zalo cua ban la 329459 9asdf987s7f6sdf79",
+        "network": "Viettel"
+    },
+    "4628995401": {
+        "code": null,
+        "network": "Viettel"
+    },
+    "4628995402": {
+        "code": null,
+        "network": "Viettel"
+    },
+}
+=====
+
+=====
+Trong đó, nếu:
+network: trống thì sẽ bị bỏ qua, nếu chưa có tên mạng thì sẽ tạo
+code: thì điền nội dung tin nhắn để server tự tách
+=====
+
+Thành công:
+{
+     "status": "200",
+     "success": true,
+     "message": null,
+     "data": {
+        "result": {
+
+            "4628995400": {
+                "status": 0,
+                "data": "Missing network"
+            },
+
+            "4628995401": {
+                "status": 1,
+                "data": "Successfully ping the number."
+            },
+            // ...
+
+        }
+     }
+}
+
+Lỗi:
+{
+     "status": "502",
+     "success": false,
+     "message": "Some error description here",
+     "data": []
+}

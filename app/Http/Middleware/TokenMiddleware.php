@@ -49,8 +49,6 @@ class TokenMiddleware
                     'success' => false,
                     'message' => 'You cannot use this function as an vendor',
                 ], 401);
-
-                $request->token = $token;
             }
             return $next($request);
         } catch (Exception $e) {
