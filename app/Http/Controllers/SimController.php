@@ -41,8 +41,8 @@ class SimController extends Controller
                 );
             }
             $isApi = false;
-            if ($request->has('token')) {
-                $user = User::where('api_token', $request->token)->first();
+            if ($request->headers->has('access_token')) {
+                $user = User::where('api_token', $request->header('access_token'))->first();
                 $isApi = true;
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
@@ -81,14 +81,21 @@ class SimController extends Controller
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
-            if ($request->has('token')) {
-                $user = User::where('api_token', $request->query('token'))->first();
+            if ($request->headers->has('access_token')) {
+                $user = User::where('api_token', $request->header('access_token'))->first();
+                if (empty($user)) return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        404,
+                        'Unauthorized Access'
+                    )
+                );
             }else{
                 return response()->json(
                     ApiService::returnResult(
                         [],
-                        415,
-                        'Missing token, please add it to the url as query string.'
+                        404,
+                        'Unauthorized Access'
                     )
                 );
             }
@@ -156,11 +163,7 @@ class SimController extends Controller
                     )
                 );
             }
-            if ($request->has('token')) {
-                $user = User::where('api_token', $request->token)->first();
-            } else {
-                $user = User::where('id', Auth::user()->id)->first();
-            }
+
             $requestId = $request->requestId;
 
             $result = $this->simsService->fetchRequest((string)$requestId);

@@ -21,7 +21,7 @@ class TokenMiddleware
     public function handle(Request $request, Closure $next)
     {
         try {
-            if (!$request->has('token') && empty($request->token))
+            if (!$request->headers->has('access_token'))
             {
                 return response([
                     'status' => 401,
@@ -29,14 +29,21 @@ class TokenMiddleware
                     'message' => 'Unauthorized Access',
                 ], 401);
             }else{
-                $token = $request->token;
+                $token = $request->header('access_token');
                 if ($token == config('simConfig.adminToken')) return $next($request);
                 $user = User::where('api_token', $token)->first();
-                if ($user['ban'] == 1 || $user['lock_api'] == 1)
-                {
-                    Auth::logout();
-                    return redirect('/login')->with('error', 'Your account has been ban.');
-                }
+                if (empty($user)) return response([
+                    'status' => 401,
+                    'success' => false,
+                    'message' => 'Unauthorized Access',
+                ], 401);
+
+                if ($user['lock_api'] == 1 || $user['ban'] == 1) return response([
+                    'status' => 401,
+                    'success' => false,
+                    'message' => 'Your account has been banned',
+                ], 401);
+
                 if ($user['tier'] >= 10) return response([
                     'status' => 401,
                     'success' => false,
