@@ -182,7 +182,11 @@ class SimsService
                 ];
             }
             $service = $this->serviceRepo->find($activity['serviceId']);
-            if (!$service) $service['serviceName'] = 'Deleted Service';
+            if (!$service)
+            {
+                $service['serviceName'] = 'Deleted Service';
+                $service['serviceId'] = 'Deleted Service';
+            };
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
@@ -192,7 +196,7 @@ class SimsService
                     'serviceId' => $activity['serviceId'],
                     'serviceName' => $service['serviceName'],
                     'status' => $activity['status'],
-                    'createdTime' => $activity['created_at'],
+                    'createdTime' => date_format(date_create($activity['created_at']),"Y-m-d H:i:s"),
                     'code' => $activity['code'],
                 ]
             ];
@@ -460,8 +464,16 @@ class SimsService
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Cannot find activity?');
                         $returnVar[$simNumber] = [
                             'status' => 0,
-                            'error' => 'Cannot find queued job for this number'
+                            'error' => 'Cannot find queued job for this number, switched to send heartbeat..'
                         ];
+                        Sims::where([
+                            ['uniqueId', $phoneData['uniqueId']]
+                        ])->update([
+                            'status' => 1,
+                            'networkId' => $network['uniqueId'],
+                            'userid' => $vendorId,
+                            'updated_at' => Carbon::now()
+                        ]);
                         continue;
                     }
 
@@ -553,7 +565,7 @@ class SimsService
                     }
 
                     DB::beginTransaction();
-                    $this->serviceRepo->update($activity['serviceId'], ['used' => $service['used']+1]);
+                    $this->serviceRepo->update($activity['serviceId'], ['used' => ((is_int($service['used']) ? $service['used'] : 0))+1]);
                     Sims::where('uniqueId', $phoneData['uniqueId'])->update(['success' => $phoneData['success'] + 1, 'status' => 1, 'networkId' => $network['uniqueId'], 'userid' => $vendorId]);
 
                     $user = User::where('id', $activity['userid'])->first();
