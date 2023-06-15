@@ -27,7 +27,6 @@ class ApiService
         ];
     }
 
-
     public function updateToken(string $userid = null)
     {
         $token = Str::random(80);

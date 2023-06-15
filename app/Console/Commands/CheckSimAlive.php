@@ -47,7 +47,6 @@ class CheckSimAlive extends Command
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
             $data = Sims::where([
-                ['updated_at', '<', Carbon::now()->subMinutes(3)],
                 ['status', 1]
             ])->update(['status' => 0]);
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Total: ' . $data . ' sims status has been changed to Maintained state');
