@@ -68,6 +68,10 @@
 @section('js')
     <script>
         $( document ).ready(function() {
+            Swal.fire({
+                title: 'Announcements',
+                text: 'Do you want to continue',
+            })
             $('input[name="daterange"]').daterangepicker({
                 "autoApply": true,
                 ranges: {

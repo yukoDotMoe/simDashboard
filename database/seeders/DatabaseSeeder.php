@@ -14,7 +14,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         Model::unguard();
-        $this->call(SimsTableSeeder::class);
+//        $this->call(SimsTableSeeder::class);
+        $this->call(WebinfoTableSeeder::class);
         Model::reguard();
     }
 }
