@@ -41,8 +41,12 @@ class SimController extends Controller
                 );
             }
             $isApi = false;
-            if ($request->headers->has('access_token')) {
-                $user = User::where('api_token', $request->header('access_token'))->first();
+            if (!empty(request()->bearerToken())) {
+                $user = User::where([
+                    ['api_token', request()->bearerToken()],
+                    ['ban', 0],
+                    ['lock_api', 0]
+                ])->first();
                 $isApi = true;
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
@@ -80,9 +84,13 @@ class SimController extends Controller
     public function updateSimClient(Request $request)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
-            if ($request->headers->has('access_token')) {
-                $user = User::where('api_token', $request->header('access_token'))->first();
+            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Data - ' . json_encode($request->all()));
+            if (!empty(request()->bearerToken())) {
+                $user = User::where([
+                    ['api_token', request()->bearerToken()],
+                    ['ban', 0],
+                    ['lock_api', 0]
+                ])->first();
                 if (empty($user)) return response()->json(
                     ApiService::returnResult(
                         [],

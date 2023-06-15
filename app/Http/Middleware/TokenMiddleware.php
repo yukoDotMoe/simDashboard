@@ -21,7 +21,7 @@ class TokenMiddleware
     public function handle(Request $request, Closure $next)
     {
         try {
-            if (!$request->headers->has('access_token'))
+            if (empty(request()->bearerToken()))
             {
                 return response([
                     'status' => 401,
@@ -29,7 +29,7 @@ class TokenMiddleware
                     'message' => 'Unauthorized Access',
                 ], 401);
             }else{
-                $token = $request->header('access_token');
+                $token = request()->bearerToken();
                 if ($token == config('simConfig.adminToken')) return $next($request);
                 $user = User::where('api_token', $token)->first();
                 if (empty($user)) return response([

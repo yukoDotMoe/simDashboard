@@ -141,6 +141,29 @@ class UsersController extends Controller
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
+            // if (!empty(request()->bearerToken())) {
+            //         $user = User::where([
+                        // ['api_token', request()->bearerToken()],
+                        // ['ban', 0],
+                        // ['lock_api', 0]
+            //         ])->first();
+            // } else {
+            //     return response([
+            //         'status' => 401,
+            //         'success' => false,
+            //         'message' => 'Unauthorized Access.',
+            //     ], 401);
+            // }
+            // if (empty($user)) return response([
+            //         'status' => 401,
+            //         'success' => false,
+            //         'message' => 'Unauthorized Access..',
+            //     ], 401);
+            // if ($user->admin != 1 && $user->tier < 10) return response([
+            //         'status' => 401,
+            //         'success' => false,
+            //         'message' => 'Unauthorized Access...',
+            //     ], 401);
             $result = $this->apiService->checkApi($token);
             if($result['status'] == 0)
             {
