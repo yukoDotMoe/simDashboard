@@ -213,7 +213,7 @@ class SimsService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $id = substr(sha1(date("Y-m-d H:i:s") . rand(10, 1000)),1,11);
+            $id = substr(sha1(date("Y-m-d H:i:s") . rand(11, 1223)),1,11);
             $payload = [
                 'uniqueId' => $id,
                 'phone' => $phone,
@@ -222,7 +222,6 @@ class SimsService
                 'status' => 1,
                 'success' => 0,
                 'failed' => 0,
-                'userid' => $vendorId,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -409,7 +408,7 @@ class SimsService
             foreach ($data as $simNumber => $simData)
             {
                 $simNumber = str_replace(' ', '', $simNumber);
-                $phoneData = $this->simsRepo->findByPhone($simNumber);
+                $phoneData = Sims::where('phone', $simNumber)->first();
 
                 if (!isset($simData['network']))
                 {
@@ -636,6 +635,7 @@ class SimsService
                     ];
                 }else{
                     if($phoneData->status < 1) $phoneData->status = 1;
+                    
                     $phoneData->updated_at = Carbon::now();
                     $phoneData->save();
 

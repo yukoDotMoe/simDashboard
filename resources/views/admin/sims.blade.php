@@ -140,6 +140,7 @@
                 formatStatus({{ $task['status'] }}),
                 "{{ $task['success'] }}",
                 "{{ $task['failed'] }}",
+                "{{ $task['vendor']}}",
                 "{{ $task['created_at'] }}",
                 "{{ $task['updated_at'] }}",
                 gridjs.html(`
@@ -394,6 +395,7 @@
                     "Trạng thái",
                     "Thành công",
                     "Thất bại",
+                    "Vendor",
                     "Tạo vào",
                     "Update lần cuối",
                     {

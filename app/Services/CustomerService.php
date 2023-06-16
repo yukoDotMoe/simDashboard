@@ -364,7 +364,9 @@ class CustomerService
             foreach ($sims as $sim)
             {
                 $network = Network::where('uniqueId', $sim->networkId)->first();
+                $vendor = User::where('id', $sim->userid)->first();
                 $sim->networkId = $network->networkName ?? '* Deleted';
+                $sim->vendor = $vendor->name ?? 'Deleted';
             }
             $networks = Network::all();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
