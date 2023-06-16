@@ -63,7 +63,7 @@ class ActivitiesService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+            $id = substr(sha1(date("Y-m-d H:i:s") . rand(69, 1223)),1,11);
             DB::beginTransaction();
             $result = $this->activityRepo->create([
                 'userid' => $userid,

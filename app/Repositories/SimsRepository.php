@@ -141,6 +141,8 @@ class SimsRepository implements SimsRepositoryInterface
     {
         // get serivce
         $service = Service::where('uniqueId', $serviceId)->first();
+        
+        Log::info('called');
 
         $querry = [
             ['status', 1],
@@ -153,6 +155,9 @@ class SimsRepository implements SimsRepositoryInterface
         $result = Sims::where($querry)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
 
         if (empty($result)) return false;
+        
+        Log::info('phone ' . $result['phone']);
+        Log::info('service ' . $serviceId);
 
         // check if service has use limit
         if ($service['limit'] >= 1)
@@ -163,6 +168,8 @@ class SimsRepository implements SimsRepositoryInterface
                 ['serviceId', $serviceId],
                 ['deleted_at', NULL]
             ])->count();
+            
+            Log::info('uses ' . $useCount);
 
             if ($useCount >= $service['limit'])
             {
@@ -174,10 +181,12 @@ class SimsRepository implements SimsRepositoryInterface
         if ($service['success'] >= 1)
         {
             $successCount = DB::table('success_records')->where([
-                ['phone', $result['phone']],
+                ['phone', $result['uniqueId']],
                 ['serviceId', $serviceId],
                 ['deleted_at', NULL]
             ])->count();
+            
+            Log::info('succ ' . $successCount);
 
             if ($successCount >= $service['success'])
             {
@@ -189,10 +198,12 @@ class SimsRepository implements SimsRepositoryInterface
         if ($service['fail'] >= 1)
         {
             $failedCount = DB::table('failed_records')->where([
-                ['phone', $result['phone']],
+                ['phone', $result['uniqueId']],
                 ['serviceId', $serviceId],
                 ['deleted_at', NULL]
             ])->count();
+            
+            Log::info('failed ' . $failedCount);
 
             if ($failedCount >= $service['fail'])
             {
