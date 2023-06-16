@@ -430,6 +430,15 @@ class SimsService
                     $network = $this->networkRepo->find($createNetwork['uniqueId']);
                 }
 
+                if (count($simNumber) > (env('DEFAULT_SIM_LENGTH') ?? 11))
+                {
+                    $returnVar[$simNumber] = [
+                        'status' => 0,
+                        'error' => 'Wrong number format'
+                    ];
+                    continue;
+                }
+
                 if (!$phoneData)
                 {
                     DB::beginTransaction();
@@ -463,14 +472,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'Cannot find queued job for this number, switched to send heartbeat..'
                         ];
-                        Sims::where([
-                            ['uniqueId', $phoneData['uniqueId']]
-                        ])->update([
-                            'status' => 1,
-                            'networkId' => $network['uniqueId'],
-                            'userid' => $vendorId,
-                            'updated_at' => Carbon::now()
-                        ]);
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -479,8 +484,12 @@ class SimsService
                         Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Content cannot be null');
                         $returnVar[$simNumber] = [
                             'status' => 0,
-                            'error' => 'You cannot provide an empty content'
+                            'error' => 'You cannot provide an empty content, please send with content to finish request'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -492,6 +501,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'This service cannot handle your request right now. Please contact site admin'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -511,6 +524,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'Sms content not valid'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -522,6 +539,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'Cannot extract code from your content, please try again'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -544,6 +565,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'Failed to update activity'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
 
@@ -579,6 +604,10 @@ class SimsService
                             'status' => 0,
                             'error' => 'Failed to update balance transaction'
                         ];
+
+                        $phoneData->updated_at = Carbon::now();
+                        $phoneData->save();
+
                         continue;
                     }
                     SimsService::addSimResult($phoneData['uniqueId'], $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
@@ -605,15 +634,10 @@ class SimsService
                         'data' => 'Successfully return code to request.'
                     ];
                 }else{
-                    Sims::where([
-                        ['uniqueId', $phoneData['uniqueId']],
-                        ['status', 0]
-                    ])->update([
-                        'status' => 1,
-                        'networkId' => $network['uniqueId'],
-                        'userid' => $vendorId,
-                        'updated_at' => Carbon::now()
-                    ]);
+                    if($phoneData->status < 1) $phoneData->status = 1;
+                    $phoneData->updated_at = Carbon::now();
+                    $phoneData->save();
+
                     $returnVar[$simNumber] = [
                         'status' => 1,
                         'data' => 'Successfully ping the number.'
@@ -756,7 +780,7 @@ class SimsService
             return [
                 'status' => 1,
                 'data' => [
-                    'phone' => '+' . $phone['countryCode'] . $phone['phone'],
+                    'phone' => $phone['phone'],
                     'balance' => $user->balance - $service['price'],
                     'price' => $service['price'],
                     'name' => $service['serviceName'],

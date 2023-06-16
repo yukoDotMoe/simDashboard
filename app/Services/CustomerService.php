@@ -88,7 +88,7 @@ class CustomerService
                         'id' => $item->uniqueId,
                         'service' => $service->serviceName,
                         'price' => $service->price,
-                        'phone' => '+' . $item->countryCode . $item->phone,
+                        'phone' => $item->phone,
                         'status' => $item->status,
                         'code' => $item->code,
                         'date' => Carbon::parse($item->created_at)->toDateTimeString(),
@@ -361,6 +361,11 @@ class CustomerService
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $sims = Sims::orderBy('status', 'DESC')->paginate(20);
+            foreach ($sims as $sim)
+            {
+                $network = Network::where('uniqueId', $sim->networkId)->first();
+                $sim->networkId = $network->networkName ?? '* Deleted';
+            }
             $networks = Network::all();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [

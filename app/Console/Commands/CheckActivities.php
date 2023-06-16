@@ -49,7 +49,7 @@ class CheckActivities extends Command
         $out = new \Symfony\Component\Console\Output\ConsoleOutput();
         try {
             $activities = Activity::where([
-                ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT'))],
+                ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT') ?? 5)],
                 ['status', 2]
             ])->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . count($activities));

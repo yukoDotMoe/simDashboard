@@ -73,13 +73,13 @@
                 var tobereturn = ``
                 switch (parseInt(status)) {
                     case 0:
-                        tobereturn = `<span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">Timeout</span>`
+                        tobereturn = `Timeout`
                         break;
                     case 1:
-                        tobereturn = `<span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">Completed</span>`
+                        tobereturn = `Completed`
                         break;
                     case 2:
-                        tobereturn = `<span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">Waiting</span>`
+                        tobereturn = `Waiting`
                         break;
                 }
                 return tobereturn;
