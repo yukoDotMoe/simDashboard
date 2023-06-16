@@ -137,7 +137,7 @@
                 "{{ $task['uniqueId'] }}",
                 "{{ $task['phone'] }}",
                 "{{ $task['networkId'] }}",
-                gridjs.html(formatStatus({{ $task['status'] }})),
+                formatStatus({{ $task['status'] }}),
                 "{{ $task['success'] }}",
                 "{{ $task['failed'] }}",
                 "{{ $task['created_at'] }}",
@@ -239,19 +239,13 @@
             value = ``;
             switch (status) {
                 case 0:
-                    value = `<span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                          ●
-                        </span>`
+                    value = `Offline`
                     break;
                 case 1:
-                    value = `<span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100 ">
-                          ●
-                        </span>`
+                    value = `Online`
                     break;
                 case 2:
-                    value = `<span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                          ●
-                        </span>`
+                    value = `Working`
                     break;
             }
             return value;
@@ -415,7 +409,7 @@
                 },
                 search: true,
                 sort: {
-                    multiColumn: false
+                    multiColumn: true
                 },
 
                 pagination: true

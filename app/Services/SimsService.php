@@ -387,22 +387,19 @@ class SimsService
 // For sending heartbeat
 '0237548237' => [
     'code' => null,
-    'network' => 'Viettel',
-    'action' => 'heartbeat'
+    'network' => 'Viettel'
 ],
 
 // For update code
 '0237548237' => [
     'code' => 'noi dung sms',
-    'network' => 'Viettel',
-    'action' => 'update'
+    'network' => 'Viettel'
 ],
 
 // For create new number
 '0237548237' => [
     'code' => null,
-    'network' => 'Viettel',
-    'action' => 'create'
+    'network' => 'Viettel'
 ]
             ];
 

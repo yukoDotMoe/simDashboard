@@ -49,7 +49,7 @@ class CheckActivities extends Command
         $out = new \Symfony\Component\Console\Output\ConsoleOutput();
         try {
             $activities = Activity::where([
-//                ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT'))],
+                ['updated_at', '<', Carbon::now()->subMinutes(env('DEFAULT_SMS_WAIT'))],
                 ['status', 2]
             ])->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . count($activities));
@@ -57,15 +57,21 @@ class CheckActivities extends Command
 
             foreach ($activities as $activity) {
                 $transaction = Balance::where('activityId', $activity['uniqueId'])->first();
+                
                 $phone = Sims::where([
                     ['phone', $activity['phone']],
                     ['status', 2]
                 ])->first();
-                if(!$phone)
+                if(empty($phone))
                 {
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not valid');
                     $out->writeln("[!] Number '" . $activity['phone'] . "' not valid. Aborted...");
-                    return 0;
+                }else{
+                    if ($phone->status == 2)
+                    {
+                        SimsService::addSimResult($phone['uniqueId'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
+                        $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
+                    }
                 }
 
                 $user = User::where('id', $transaction['accountId'])->first();
@@ -97,8 +103,6 @@ class CheckActivities extends Command
                     return 0;
                 }
 
-                SimsService::addSimResult($phone['uniqueId'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
-                $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
                 $transaction->status = 1;
                 $transaction->save();
                 $data = [
