@@ -213,7 +213,7 @@ class SimsService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+            $id = substr(sha1(date("Y-m-d H:i:s") . rand(10, 1000)),1,11);
             $payload = [
                 'uniqueId' => $id,
                 'phone' => $phone,
@@ -222,6 +222,7 @@ class SimsService
                 'status' => 1,
                 'success' => 0,
                 'failed' => 0,
+                'userid' => $vendorId,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];

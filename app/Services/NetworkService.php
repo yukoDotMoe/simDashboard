@@ -56,7 +56,7 @@ class NetworkService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $uniqueId = substr(sha1(date("Y-m-d H:i:s")),1,11);
+            $uniqueId = substr(sha1(date("Y-m-d H:i:s") . rand(2, 1023)),1,11);
             $result = $this->networkRepo->create([
                 'uniqueId' => $uniqueId,
                 'networkName' => $name,
