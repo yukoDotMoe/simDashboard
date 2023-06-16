@@ -430,7 +430,7 @@ class SimsService
                     $network = $this->networkRepo->find($createNetwork['uniqueId']);
                 }
 
-                if (count($simNumber) > (env('DEFAULT_SIM_LENGTH') ?? 11))
+                if (strlen($simNumber) > (env('DEFAULT_SIM_LENGTH') ?? 11))
                 {
                     $returnVar[$simNumber] = [
                         'status' => 0,
