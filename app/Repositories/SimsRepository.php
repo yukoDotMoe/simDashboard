@@ -6,6 +6,7 @@ namespace App\Repositories;
 use App\Models\Network;
 use App\Models\Service;
 use App\Models\Sims;
+use App\Services\SimsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -78,140 +79,66 @@ class SimsRepository implements SimsRepositoryInterface
         return (empty($result) ? false : $result);
     }
 
-    protected function rotatePhoneNumber($phone, $network = null)
+    public function rotatePhoneNumber($service, $network = null)
     {
-        $querry = [
-            ['status', 1],
-            ['deleted_at', null],
-            ['phone', '!=', $phone]
-        ];
-
+        $locked = DB::table('sim_lock')->where([
+            ['services', $service]
+        ])->get()->transform(function ($item) {
+            return $item->phone;
+        });
+        
         if (!empty($network)) {
-            $querry['networkId'] = $network;
-            $result = Sims::where($querry)->first();
+            $result = Sims::where([
+            ['status', 1],
+            ['networkId', $network]
+            ])->whereNotIn('phone', $locked)->orderBy('updated_at', 'ASC')->first();
         }else{
-            $result = Sims::where($querry)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
+            $result = Sims::where('status', 1)->whereNotIn('phone', $locked)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
         }
         return (empty($result) ? false : $result);
     }
 
-    protected function cooldownSim($serviceId, $phone)
-    {
-        // 1: return result
-        // 2: rotate number
-
-        $result = Sims::where('phone', $phone)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
-        $currentLocked = json_decode($result->locked_services, true);
-
-        $service = Service::where('uniqueId', $serviceId)->first();
-        // check if sim's service has been lock
-        if(!isset($currentLocked[$serviceId])) {
-            $currentLocked[$serviceId] = [
-                'name' => $service->serviceName,
-                'cooldown' => Carbon::now()->addHours($service['cooldown'])
-            ];
-            $gonnaReturn = 2;
-        }else{
-            // check if cooldown expired
-            if (Carbon::parse($currentLocked[$serviceId]['cooldown'])->lte(Carbon::now()))
-            {
-                DB::table('sim_activities')->where([
-                    ['phoneNumber', $phone],
-                    ['serviceId', $serviceId],
-                    ['deleted_at', NULL]
-                ])->update(['deleted_at' => Carbon::now()]);
-                unset($currentLocked[$serviceId]);
-                $gonnaReturn = 1;
-            }else{
-                $currentLocked[$serviceId] = [
-                    'name' => $service->serviceName,
-                    'cooldown' => Carbon::now()->addHours($service['cooldown'])
-                ];
-                $gonnaReturn = 2;
-            }
-        }
-
-        $result->locked_services = json_encode($currentLocked);
-        $result->save();
-
-        return $gonnaReturn;
-    }
-
     public function newestPhone($serviceId, $network = null)
     {
-        // get serivce
         $service = Service::where('uniqueId', $serviceId)->first();
-        
-        Log::info('called');
-
         $querry = [
             ['status', 1],
             ['deleted_at', null]
         ];
-
         if (!empty($network)) $querry['networkId'] = $network;
-
-        // get random sim
-        $result = Sims::where($querry)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
-
+        $lockedList = DB::table('sim_lock')->where([
+            ['services', $service]
+        ])->get()->transform(function ($item) {
+            return $item->phone;
+        });
+        $result = Sims::where($querry)->whereNotIn('phone', $lockedList)->whereIn('networkId', $this->getActiveNetwork())->orderBy('updated_at', 'ASC')->first();
         if (empty($result)) return false;
         
-        Log::info('phone ' . $result['phone']);
-        Log::info('service ' . $serviceId);
-
-        // check if service has use limit
-        if ($service['limit'] >= 1)
+        $locked = DB::table('sim_lock')->where([
+            ['phone', $result->phone],
+            ['services', $serviceId]
+        ])->first();
+        
+        if(empty($locked))
         {
-            // get sim's uses by service id and count it
-            $useCount = DB::table('sim_activities')->where([
-                ['phoneNumber', $result['phone']],
-                ['serviceId', $serviceId],
-                ['deleted_at', NULL]
-            ])->count();
-            
-            Log::info('uses ' . $useCount);
-
-            if ($useCount >= $service['limit'])
+            return $result;
+        }else{
+            if (Carbon::parse($locked->cooldown)->lte(Carbon::now()))
             {
-                $cooldownNumber = $this->cooldownSim($serviceId, $result['phone']);
-                if ($cooldownNumber > 1) return $this->rotatePhoneNumber($result['phone'], $network);
+                SimsService::deleteAllInTable($serviceId, $result->uniqueId);
+                DB::table('sim_lock')->delete($locked->id);
+                return $result;
             }
+            return $this->rotatePhoneNumber($serviceId, $network);
         }
-
-        if ($service['success'] >= 1)
-        {
-            $successCount = DB::table('success_records')->where([
-                ['phone', $result['uniqueId']],
-                ['serviceId', $serviceId],
-                ['deleted_at', NULL]
-            ])->count();
-            
-            Log::info('succ ' . $successCount);
-
-            if ($successCount >= $service['success'])
-            {
-                $cooldownNumber = $this->cooldownSim($serviceId, $result['phone']);
-                if ($cooldownNumber > 1) return $this->rotatePhoneNumber($result['phone'], $network);
-            }
-        }
-
-        if ($service['fail'] >= 1)
-        {
-            $failedCount = DB::table('failed_records')->where([
-                ['phone', $result['uniqueId']],
-                ['serviceId', $serviceId],
-                ['deleted_at', NULL]
-            ])->count();
-            
-            Log::info('failed ' . $failedCount);
-
-            if ($failedCount >= $service['fail'])
-            {
-                $cooldownNumber = $this->cooldownSim($serviceId, $result['phone']);
-                if ($cooldownNumber > 1) return $this->rotatePhoneNumber($result['phone'], $network);
-            }
-        }
-
-        return $result;
+        // Log::info($result);
+        // $currentLocked = json_decode($result->locked_services, true);
+        // Log::info($serviceId);
+        // Log::info($currentLocked);
+        // if( array_key_exists($serviceId, $currentLocked ?? [])) {
+        //     Log::info('locked found');
+        //     return $this->rotatePhoneNumber($result->phone, $network);
+        // };
+        // return $result;
     }
 }

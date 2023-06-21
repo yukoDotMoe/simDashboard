@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Repositories\ActivityRepositoryInterface;
 use App\Repositories\BalanceRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Models\Sims;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use DB;
@@ -63,12 +64,14 @@ class ActivitiesService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $id = substr(sha1(date("Y-m-d H:i:s") . rand(69, 1223)),1,11);
+            $id = substr(sha1(date("Y-m-d H:i:s") . rand(2, 1223)),1,11);
+            $sim = Sims::where('uniqueId', $phone)->first();
             DB::beginTransaction();
             $result = $this->activityRepo->create([
                 'userid' => $userid,
                 'uniqueId' => $id,
-                'phone' => $phone,
+                'phone' => $sim->phone,
+                'simId' => $sim->uniqueId,
                 'networkId' => $networkId,
                 'countryCode' => $country,
                 'serviceId' => $serviceId,
@@ -255,7 +258,6 @@ class ActivitiesService
                 'data' => [
                     'requestId' => $requestId,
                     'phoneNumber' => $activity['phone'],
-                    'countryCode' => $activity['countryCode'],
                     'serviceId' => $activity['serviceId'],
                     'serviceName' => $service['serviceName'],
                     'status' => $activity['status'],

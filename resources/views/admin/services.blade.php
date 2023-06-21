@@ -40,6 +40,12 @@
                 </p>
                 <!-- Modal description -->
                 <form>
+                    
+                    <label class="mb-4 block text-sm">
+                        <span class="text-gray-700 dark:text-gray-400">Tên</span>
+                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                               id="name" type="text" required />
+                    </label>
 
                     <label class="block mt-4 text-sm">
                         <span class="text-gray-700 dark:text-gray-400">
@@ -270,6 +276,7 @@
             function fillToModal(data) {
                 if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
                 $('#serviceName').text(data.serviceName);
+                $('#name').val(data.serviceName);
                 $('#serviceId').text(data.uniqueId);
                 $('#price').val(data.price);
                 $('#useCount').val(data.limit);
@@ -307,18 +314,20 @@
             $('#serviceBtn').click(function (e) {
                 e.preventDefault();
                 const simId = $(this).attr('data-sim');
+                const name = $('#name').val();
                 const status = $('#status').val();
                 const price = $('#price').val();
                 const limit = $('#useCount').val();
                 const fail = $('#fail').val();
                 const success = $('#success').val();
                 const cooldown = $('#cooldown').val();
-                const structure = $('#structure').val();
+                const structure =encodeURIComponent($('#structure').val());
                 const checkValid = encodeURIComponent($('#checkValid').val());
+            
 
                 $.ajax({
                     type: "POST",
-                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&status=${status}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}&success=${parseInt(success)}&fail=${parseInt(fail)}`,
+                    url: `{{ route('admin.serviceEdit') }}?id=${simId}&name=${name}&status=${status}&price=${price}&limit=${parseInt(limit)}&cooldown=${parseInt(cooldown)}&structure=${structure}&valid=${checkValid}&success=${parseInt(success)}&fail=${parseInt(fail)}`,
                     cache: false,
                     success: function (data) {
                         if(data.status > 200)

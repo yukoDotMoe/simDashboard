@@ -142,7 +142,6 @@
                 "{{ $task['failed'] }}",
                 "{{ $task['vendor']}}",
                 "{{ $task['created_at'] }}",
-                "{{ $task['updated_at'] }}",
                 gridjs.html(`
                     <div class="flex items-center space-x-4 text-sm">
                                 <button @click="openModal" data-sim="{{ $task['uniqueId'] }}" class="editBtn flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Edit">
@@ -203,6 +202,10 @@
                 }
             });
         })
+        
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
 
         function fillToModal(data) {
             if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
@@ -211,7 +214,7 @@
             $('#simEdit').attr('data-sim', data.uniqueId);
             $('#phone').text(data.phone);
 
-            locked_list = JSON.parse(data.locked_services)
+            locked_list = data.locked
             $('#lockedList').html('')
             if(typeof locked_list === 'object' && locked_list !== null)
             {
@@ -220,12 +223,12 @@
                     Object.keys(locked_list).forEach(function(key) {
                         $('#lockedList').append(`
                             <tr class="text-gray-700 dark:text-gray-400 locked_item" data-id="${key}">
-                                <td class="px-4 py-3 text-sm">${locked_list[key]['name'] ?? "⁉"}</td>
-                                <td class="px-4 py-3 text-sm">${moment().format('HH:mm:ss DD-MM-Y')}</td>
-                                <td class="px-4 py-3 text-sm d-flex justify-center delete-locked-item" data-locked="${key}" data-sim="${data.uniqueId}">
-                                  <button class="delete flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                <td class="px-4 py-3 text-sm">${capitalizeFirstLetter(locked_list[key]['name']) ?? "⁉"}</td>
+                                <td class="px-4 py-3 text-sm">${moment(locked_list[key]['cooldown']).format('HH:mm:ss DD-MM-Y')}</td>
+                                <td class="px-4 py-3 text-sm d-flex justify-center">
+                                  <button data-locked="${locked_list[key]['id']}" data-sim="${data.uniqueId}" class="locked-item flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray">
+                                        <svg class="w-5 h-5" stroke="currentColor" fill="white" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
                                         </svg>
                                     </button>
                                 </td>
@@ -338,7 +341,7 @@
             });
         })
 
-        $(document).on('click','.delete-locked-item',function(e){
+        $(document).on('click','.locked-item',function(e){
             e.preventDefault()
             serviceId = $(this).attr('data-locked')
             simId = $(this).attr('data-sim')
@@ -401,7 +404,6 @@
                     "Thất bại",
                     "Vendor",
                     "Tạo vào",
-                    "Update lần cuối",
                     {
                         name: "Hành Động",
                         sort: false

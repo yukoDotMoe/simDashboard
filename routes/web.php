@@ -91,7 +91,7 @@ Route::group([
     'prefix' => 'vendor'
 ], function () {
     Route::get('/dashboard', [\App\Http\Controllers\VendorController::class, 'dashboard'])->name('vendor.dashboard');
-    Route::get('/sims', [\App\Http\Controllers\VendorController::class, 'sims'])->name('vendor.sims');
+    Route::get('/sims/{showOffline?}', [\App\Http\Controllers\VendorController::class, 'sims'])->name('vendor.sims');
     Route::post('/sims/{id}', [\App\Http\Controllers\VendorController::class, 'simsActivities'])->name('vendor.sims.activities');
     Route::post('/dashboard/filter', [\App\Http\Controllers\VendorController::class, 'dashboardFilter'])->name('vendor.dashboard.filter');
     Route::post('/sims/filter', [\App\Http\Controllers\VendorController::class, 'simsFilter'])->name('vendor.sims.filter');
@@ -100,4 +100,7 @@ Route::group([
 
     Route::get('/accounts', [\App\Http\Controllers\VendorController::class, 'accountView'])->name('vendor.accounts');
     Route::post('/changePassword', [\App\Http\Controllers\UsersController::class, 'changePassword'])->name('vendor.accounts.changePass');
+    
+    Route::get('/transactions', [\App\Http\Controllers\VendorController::class, 'transactionsView'])->name('vendor.transactions');
+    Route::post('/transactions/filter', [\App\Http\Controllers\VendorController::class, 'transactionsFilter'])->name('vendor.transactions.filter');
 });

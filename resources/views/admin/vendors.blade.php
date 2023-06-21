@@ -41,14 +41,8 @@
                 <!-- Modal description -->
                 <form>
                     <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Tên</span>
+                        <span class="text-gray-700 dark:text-gray-400">Username</span>
                         <input id="username" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"/>
-                    </label>
-
-                    <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Email</span>
-                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                               id="email" type="email" />
                     </label>
 
                     <label class="mb-4 block text-sm">
@@ -258,8 +252,7 @@
                 @foreach($data['users'] as $task)
                 [
                     "{{ $task['id'] }}",
-                    "{{ $task['name'] }}",
-                    "{{ $task['email'] }}",
+                    "{{ $task['username'] }}",
                     "{{ number_format($task['balance'], 0, '', ',') ?? 0 }}",
                     "{{ $task['rentTotal'] ?? 0 }}",
                     "{{ $task['simCount'] ?? 0 }}",
@@ -300,8 +293,7 @@
                                 };
                             }
                     }},
-                    "Tên",
-                    "Email",
+                    "Username",
                     "Doanh Thu",
                     "Lượt Cho Thuê",
                     "Số Lượng Sim",
@@ -339,7 +331,6 @@
                 })
 
                 const username = $('#username');
-                const email = $('#email');
                 const password = $('#password');
                 const token = $('#token');
 
@@ -359,17 +350,8 @@
                     </span>`)
                 }
 
-                if(!email.val() || !validateEmail(email.val()))
-                {
-                    return email.parent().append(`
-                    <span class="text-xs text-red-600 dark:text-red-400 error">
-                      Email không hợp lệ
-                    </span>`)
-                }
-
                 toBePost = {
-                    name: username.val(),
-                    email: email.val(),
+                    username: username.val(),
                     profit: parseInt($('#profitRate').val()),
                     api_token: token.val(),
                 }
@@ -433,8 +415,7 @@
         function fillToModal(data) {
             if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
             $('#profitRate').val(data.profit);
-            $('#email').val(data.email);
-            $('#username').val(data.name);
+            $('#username').val(data.username);
             $('#userId').text(data.id);
             $('#token').val(data.api_token);
             $('#accountEdit').attr('data-user', data.id);

@@ -43,21 +43,12 @@
 
     </div>
 
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Transactions <p class="text-xs text-gray-600 dark:text-gray-200">
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Requests <p class="text-xs text-gray-600 dark:text-gray-200">
             Track rental transactions easily. Stay updated on payments and rental history in one place.
         </p></h2>
     <div class="w-full mb-8 overflow-hidden">
         <div class="w-full overflow-x-auto">
             <div id="payments" class="text-center"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
-        </div>
-    </div>
-
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Requests <p class="text-xs text-gray-600 dark:text-gray-200">
-            View rental history of Sims. Keep track of past rentals and payments with ease.
-        </p></h2>
-    <div class="w-full mb-8 overflow-hidden">
-        <div class="w-full overflow-x-auto">
-            <div id="request" class="text-center"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
         </div>
     </div>
 @endsection
@@ -90,53 +81,50 @@
             )
 
             let paymentsTable;
-            let requestTable;
             let firstTime = true;
             let totalProfit = 0;
             let totalRequest = 0;
 
             function updateTable(data)
             {
+                totalProfit = 0;
+                totalRequest = 0;
                 if(firstTime)
                 {
                     $('#payments').html(``)
-                    $('#request').html(``)
                     firstTime = false;
                     paymentsTable = new gridjs.Grid({
-                        columns: ["ID", "Amount", "Request", "Date"],
-                        data: data.transactions,
-                        // search: true,
+                        columns: [{
+                            name: "ID",
+                            width: "10%"
+                        },"User", {
+                            name: "Service",
+                            width: "12%"
+                        },{
+                            name: "Amount",
+                            width: "10%"
+                        }, "Phone", "Code", "Date"],
+                        data: data,
+                        search: true,
                         sort: {
                             multiColumn: false
                         },
-                        // pagination: true
+                        pagination: {
+                            limit: 5,
+                            summary: false  
+                        }
                     }).render(document.getElementById("payments"));
-
-                    data.transactions.forEach(function (e) {
-                        totalProfit += e.amount;
-                    })
-
-                    $('#totalProfit').html(totalProfit)
-                    $('#totalRequest').html(Object.keys(data.requests).length)
-
-                    requestTable = new gridjs.Grid({
-                        columns: ["ID", "Phone", "Service", "Status", "Date"],
-                        data: data.requests,
-                        // search: true,
-                        sort: {
-                            multiColumn: false
-                        },
-                        // pagination: true
-                    }).render(document.getElementById("request"));
                 }else{
                     paymentsTable.updateConfig({
-                        data: data.transactions
-                    }).forceRender();
-
-                    requestTable.updateConfig({
-                        data: data.requests
+                        data: data
                     }).forceRender();
                 }
+                
+                data.forEach(function (e) {
+                    totalProfit += e.amount;
+                })
+                $('#totalProfit').html((new Intl.NumberFormat('vi-VN').format(parseInt(totalProfit)).replaceAll(".", ",")))
+                $('#totalRequest').html(Object.keys(data).length)
             }
 
             function fillContent(start, end)

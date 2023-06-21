@@ -9,6 +9,7 @@ use App\Models\Activity;
 use App\Models\Network;
 use App\Models\Sims;
 use App\Models\User;
+use App\Models\Service;
 use App\Repositories\ActivityRepositoryInterface;
 use App\Repositories\NetworkRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
@@ -192,7 +193,7 @@ class SimsService
                 'status' => 1,
                 'data' => [
                     'requestId' => $activity['uniqueId'],
-                    'phoneNumber' => '+'. $activity['countryCode'] . $activity['phone'],
+                    'phoneNumber' => $activity['phone'],
                     'serviceId' => $activity['serviceId'],
                     'serviceName' => $service['serviceName'],
                     'status' => $activity['status'],
@@ -213,7 +214,7 @@ class SimsService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            $id = substr(sha1(date("Y-m-d H:i:s") . rand(11, 1223)),1,11);
+            $id = substr(sha1(date("Y-m-d H:i:s"). rand(2, 1223)),1,10);
             $payload = [
                 'uniqueId' => $id,
                 'phone' => $phone,
@@ -361,14 +362,112 @@ class SimsService
             ];
         }
     }
+    
+    public static function checkLock($phone, $service)
+    {
+        Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
+        try {
+            
+            $locked = DB::table('sim_lock')->where([
+                ['simId', $phone],
+                ['services', $service]
+            ])->first();
+            
+            $service = Service::where('uniqueId', $service)->first()->toArray();
+            
+            $sim = Sims::where('uniqueId', $phone)->first();
+            
+            if (empty($locked))
+            {
+                
+                $checkVar = [];
+                $dbArr = ['limit', 'success', 'fail'];
+                
+                $useCount = DB::table('sim_activities')->where([
+                    ['simId', $sim->uniqueId],
+                    ['serviceId', $service['uniqueId']],
+                    ['deleted_at', NULL],
+                ])->count();
+                
+                $success = DB::table('success_records')->where([
+                    ['simId', $sim->uniqueId],
+                    ['serviceId', $service['uniqueId']],
+                    ['deleted_at', NULL],
+                ])->count();
+                
+                $fail = DB::table('failed_records')->where([
+                    ['simId', $sim->uniqueId],
+                    ['serviceId', $service['uniqueId']],
+                    ['deleted_at', NULL],
+                ])->count();
 
-    public static function addSimResult($phone, $service, $request, $status, $reason = null)
+                if ( 
+                    ( $service['limit'] >= 1 && $service['limit'] <= $useCount ) || 
+                    ($service['success'] >= 1 && $service['success'] <= $success) || 
+                    ($service['fail'] >= 1 && $service['fail'] <= $fail) 
+                )
+                {
+                    DB::table('sim_lock')->insertGetId([
+                        'simId' => $phone,
+                        'phone' => $sim->phone,
+                        'services' => $service['uniqueId'],
+                        'cooldown' => Carbon::now()->addHours($service['cooldown']),
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
+                }
+            }else{
+                if (Carbon::parse($locked->cooldown)->lte(Carbon::now()))
+                {
+                    SimsService::deleteAllInTable($service['uniqueId'], $sim->uniqueId);
+                    DB::table('sim_lock')->delete($locked->id);
+                }
+            }
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . ' - ' . $e->getLine() . ' - ' . $e->getMessage());
+            return [
+                'status' => 0,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+    
+    public static function deleteAllInTable($service, $phone)
+    {
+        DB::table('sim_activities')->where([
+                    ['simId', $phone],
+                    ['serviceId', $service],
+                    ['deleted_at', NULL]
+                ])->update(['deleted_at' => Carbon::now()]);
+                
+        DB::table('success_records')->where([
+                    ['simId', $phone],
+                    ['serviceId', $service],
+                    ['deleted_at', NULL]
+                ])->update(['deleted_at' => Carbon::now()]);
+                
+        DB::table('failed_records')->where([
+                    ['simId', $phone],
+                    ['serviceId', $service],
+                    ['deleted_at', NULL]
+                ])->update(['deleted_at' => Carbon::now()]);
+    }
+
+
+    public static function addSimResult($phone, $service, $request, $status, $vendor, $reason = null)
     {
         $table = ($status == 1) ? 'success_records' : 'failed_records';
-        $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+        $id = substr(sha1(date("Y-m-d H:i:s"). rand(1, 1003)),0,10);
+        $sim = Sims::where('phone', $phone)->first();
+        
+        // $sim->working_services = '';
+        // $sim->save(); 
+
         $result = DB::table($table)->insertGetId([
             'uniqueId' => $id,
+            'simId' => $sim->uniqueId,
             'phone' => $phone,
+            'vendorId' => $vendor,
             'serviceId' => $service,
             'requestId' => $request,
             'reason' => $reason,
@@ -408,7 +507,9 @@ class SimsService
             foreach ($data as $simNumber => $simData)
             {
                 $simNumber = str_replace(' ', '', $simNumber);
-                $phoneData = Sims::where('phone', $simNumber)->first();
+                $phoneData = Sims::where([
+                    ['phone', 'like','%' . $simNumber . '%']
+                ])->first();
 
                 if (!isset($simData['network']))
                 {
@@ -421,7 +522,7 @@ class SimsService
                 }
 
                 $network = Network::where([
-                    ['networkName', $simData['network']]
+                    ['networkName', 'like', '%' . $simData['network'] . '%']
                 ])->first();
 
                 if (empty($network))
@@ -439,7 +540,7 @@ class SimsService
                     continue;
                 }
 
-                if (!$phoneData)
+                if (empty($phoneData))
                 {
                     DB::beginTransaction();
                     $result = $this->create($simNumber, 84, $network['uniqueId'], $vendor, $vendorId);
@@ -610,12 +711,13 @@ class SimsService
 
                         continue;
                     }
-                    SimsService::addSimResult($phoneData['uniqueId'], $service['uniqueId'], $activity['uniqueId'], 1,'Returned code successfully');
+                    SimsService::addSimResult($phoneData['phone'], $service['uniqueId'], $activity['uniqueId'], 1, $vendorId,'Returned code successfully');
 
                     if ($vendor)
                     {
                         $vendorRow = User::where('id', $vendorId)->first();
                         $vendorRow->increment('balance', ($service['price'] * $vendorRow->profit) / 100);
+                        sleep(1);
                         DB::table('vendors_balance')->insert([
                             'uniqueId' => substr(sha1(date("Y-m-d H:i:s") . rand(423, 1223)),1,11),
                             'vendorId' => $vendorId,
@@ -628,6 +730,8 @@ class SimsService
                             'updated_at' => Carbon::now()
                         ]);
                     }
+                    
+                    SimsService::checkLock($phoneData['uniqueId'], $service['uniqueId']);
 
                     $returnVar[$simNumber] = [
                         'status' => 1,
@@ -637,6 +741,7 @@ class SimsService
                     if($phoneData->status < 1) $phoneData->status = 1;
                     
                     $phoneData->updated_at = Carbon::now();
+                    $phoneData->userid = $vendorId;
                     $phoneData->save();
 
                     $returnVar[$simNumber] = [
@@ -723,6 +828,8 @@ class SimsService
                 ];
             }
             
+            sleep(1);
+            
             DB::beginTransaction();
             // Hold user balance
             $holdBalance = $this->balanceService->subtractBalance($user->id, $service['price'], true);
@@ -739,11 +846,9 @@ class SimsService
 
             DB::beginTransaction();
             // Change status to busy
+            // $working_services = $serviceId;
+            
             $updatePhone = $this->update($phone['uniqueId'], ['status' => 2]);
-
-//            $working_services = json_decode($phone['working_services'], true);
-//            $working_services[] = $serviceId;
-//            $updatePhone = $this->update($phone['uniqueId'], ['working_service' => json_encode($working_services)]);
 
             DB::commit();
             if(!$updatePhone)
@@ -755,10 +860,12 @@ class SimsService
                     'error' => 'Cannot change phone number status'
                 ];
             }
+            
+            Log::info('balance: ' . $holdBalance['id']);
 
             DB::beginTransaction();
             // Create request for easy working
-            $createRequest = $this->activityService->create($user->id, $phone['phone'], $phone['networkId'], $phone['countryCode'], $serviceId, $holdBalance['id'], $api, $custom);
+            $createRequest = $this->activityService->create($user->id, $phone['uniqueId'], $phone['networkId'], $phone['countryCode'], $serviceId, $holdBalance['id'], $api, $custom);
             DB::commit();
             if($createRequest['status'] == 0)
             {
@@ -772,6 +879,7 @@ class SimsService
 
             DB::table('sim_activities')->insert([
                 'phoneNumber' => $phone['phone'],
+                'simId' => $phone['uniqueId'],
                 'serviceId' => $serviceId,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
@@ -806,9 +914,9 @@ class SimsService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $token . ' - '. $serviceId . ' - '. $networkId . ' - '. $api . ' - '. $phoneNumber . ' - ');
             if (!empty($phoneNumber))
             {
-                if (substr($phoneNumber, 0, strlen('84')) == '84') {
-                    $phoneNumber = substr($phoneNumber, strlen('84'));
-                }
+                // if (substr($phoneNumber, 0, strlen('84')) == '84') {
+                //     $phoneNumber = substr($phoneNumber, strlen('84'));
+                // }
                 $phone = $this->simsRepo->findByPhone($phoneNumber);
                 if(!$phone)
                 {
@@ -829,14 +937,33 @@ class SimsService
                 }
                 $phone = $this->simsRepo->newestPhone($serviceId, $networkId == 'all' ? null : $networkId);
             }
+            
+            $locked = DB::table('sim_lock')->where([
+                ['phone', $phone->phone],
+                ['services', $serviceId]
+            ])->first();
+            
+            if(!empty($locked))
+            {
+                if (Carbon::parse($locked->cooldown)->lte(Carbon::now()))
+                {
+                    SimsService::deleteAllInTable($serviceId, $phone->uniqueId);
+                    DB::table('sim_lock')->delete($locked->id);
+                }else{
+                    $phone = $this->simsRepo->rotatePhoneNumber($serviceId, $networkId);
+                }
+            }
+            
             if (!$phone)
             {
                 Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - No phone number available');
                 return [
                     'status' => 0,
-                    'error' => 'No phone number available'
+                    'error' => (empty($locked)) ? 'No phone number available' : 'Phone number not available'
                 ];
             }
+
+            
             $result = $this->rentFunc($token, $phone['phone'], $serviceId, $api);
             if($result['status'] == 0)
             {

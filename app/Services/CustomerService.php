@@ -218,7 +218,7 @@ class CustomerService
                     'activitieslog.serviceId',
                     'services.serviceName'
                 )
-                ->orderBy('balanceslog.created_at', 'desc')
+                ->orderBy('activitieslog.created_at', 'desc')
                 ->get()->transform(function ($item) {
                     return [
                         'id' => $item['uniqueId'],
@@ -254,7 +254,8 @@ class CustomerService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
-            $sims = Sims::where('status', '>', 0)->count();
+            $sims = Sims::where('status', 
+            '>=', 1)->count();
             $simsDied = Sims::where('status', 0)->count();
             $totalSims = Sims::count();
 
@@ -360,7 +361,7 @@ class CustomerService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
-            $sims = Sims::orderBy('status', 'DESC')->paginate(20);
+            $sims = Sims::orderBy('status', 'DESC')->get();
             foreach ($sims as $sim)
             {
                 $network = Network::where('uniqueId', $sim->networkId)->first();
@@ -552,35 +553,32 @@ class CustomerService
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $sim . ' - ' . $service);
-            $sim = Sims::where('uniqueId', $sim)->first();
-            if (!$sim || empty($sim))
-            {
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not found');
-                return array(
-                    'status' => 0,
-                    'error' => 'Sim not found'
-                );
-            }
-
-            $lockedServices = json_decode($sim['locked_services'], true);
-
-            if (empty($lockedServices[$service]))
-            {
-                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Locked service not found');
-                return array(
-                    'status' => 0,
-                    'error' => 'Locked service not found'
-                );
-            }
-
+            $locked = DB::table('sim_lock')->where('id', $service)->first();
+            
+            if (empty($locked)) return [
+                "status"=>0,
+                "error"=>"cannot find lock"
+            ];
+            
             DB::table('sim_activities')->where([
-                ['phoneNumber', $sim['phone']],
-                ['serviceId', $service]
+                ['simId', $sim],
+                ['serviceId', $locked->services],
+                ['deleted_at', NULL]
+            ])->update(['deleted_at' => Carbon::now()]);
+                    
+            DB::table('success_records')->where([
+                ['simId', $sim],
+                ['serviceId', $locked->services],
+                ['deleted_at', NULL]
+            ])->update(['deleted_at' => Carbon::now()]);
+                    
+            DB::table('failed_records')->where([
+                ['simId', $sim],
+                ['serviceId', $locked->services],
+                ['deleted_at', NULL]
             ])->update(['deleted_at' => Carbon::now()]);
 
-            unset($lockedServices[$service]);
-            $sim->locked_services = json_encode($lockedServices);
-            $sim->save();
+            DB::table('sim_lock')->delete($locked->id);
 
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
@@ -623,7 +621,7 @@ class CustomerService
         }
     }
 
-    public function updateService($uniqueId, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid, $delete = false)
+    public function updateService($uniqueId,$name, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid, $delete = false)
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
@@ -632,6 +630,7 @@ class CustomerService
             {
                 $service->delete();
             }else {
+                $service->serviceName = $name;
                 $service->status = $status;
                 $service->price = $price;
                 $service->limit = $limit;
