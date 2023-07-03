@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use DB;
 
 class AdminController extends Controller
 {
@@ -141,6 +142,18 @@ class AdminController extends Controller
     {
         $id = str_replace(' ', '', $id);
         $result = Sims::where('uniqueId', $id)->first();
+        $locked = DB::table('sim_lock')->where([
+            ['phone', $result->phone],
+        ])->get()->transform(function ($item) {
+            $service = Service::where('uniqueId', $item->services)->first();
+            return [
+                'id' => $item->id,
+                'name' => $service->serviceName ?? 'Deleted Service',
+                'cooldown' => $item->cooldown
+            ];
+        });
+        
+        $result->locked = $locked;
         return response()->json($result);
     }
 
@@ -380,8 +393,9 @@ class AdminController extends Controller
             $uniqueId = $request->query('id');
             if ($request->has('delete'))
             {
-                $result = $this->customerService->updateService($uniqueId, null, null, null, null, null, null, null,null, true);
+                $result = $this->customerService->updateService($uniqueId, null, null, null, null, null, null, null, null,null, true);
             }else{
+                $name = $request->query('name');
                 $status = $request->query('status');
                 $price = $request->query('price');
                 $limit = $request->query('limit');
@@ -390,7 +404,7 @@ class AdminController extends Controller
                 $cooldown = $request->query('cooldown');
                 $structure = $request->query('structure');
                 $valid = $request->query('valid');
-                $result = $this->customerService->updateService($uniqueId, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid);
+                $result = $this->customerService->updateService($uniqueId, $name, $status, $price, $limit, $success, $fail, $cooldown, $structure, $valid);
             }
 
             if ($result['status'] == 0) {
@@ -622,7 +636,6 @@ class AdminController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|alpha_dash|unique:users,name',
-            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:10',
             'profit' => 'required|integer|min:1|max:100'
         ]);
@@ -633,13 +646,12 @@ class AdminController extends Controller
         }
 
         $username = $request->username;
-        $email = $request->email;
         $password = $request->password;
         $profit = $request->profit;
 
         $user = User::create([
             'name' => $username,
-            'email' => $email,
+            'username' => $username,
             'password' => Hash::make($password),
             'profit' => $profit,
             'api_token' => Str::random(80),

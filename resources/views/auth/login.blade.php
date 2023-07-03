@@ -7,8 +7,13 @@
 <form method="POST" action="{{ route('login') }}">
     @csrf
     <label class="block text-sm">
+<<<<<<< HEAD
         <span class="text-gray-700 dark:text-gray-400">Tên đăng nhập</span>
         <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" placeholder="Email" name="email" type="email" required autofocus />
+=======
+        <span class="text-gray-700 dark:text-gray-400">Username</span>
+        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" placeholder="Username" name="username" type="text" required autofocus />
+>>>>>>> 88cad576f5bb6946f7c3f5611f5ac81d193f33cd
     </label>
     <label class="block mt-4 text-sm">
         <span class="text-gray-700 dark:text-gray-400">Mật khẩu</span>

@@ -15,14 +15,48 @@ class VendorController
     {
         $this->vendorService = $vendorServices;
     }
+    public function transactionsView()
+    {
+        return view('vendors.transactions');
+    }
+    public function transactionsFilter(Request $request)
+    {
+        try {
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            $start = $request->startDate;
+            $end = $request->endDate;
+            $result = $this->vendorService->transactionsView($start, $end);
+            if ($result['status'] == 0 )
+            {
+                return response()->json(
+                    ApiService::returnResult(
+                        [],
+                        502,
+                        $result['error']
+                    )
+                );
+            }
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            return response()->json(ApiService::returnResult($result['data']));
+        } catch (Exception $e) {
+            Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
+            return response()->json(
+                ApiService::returnResult(
+                    [],
+                    502,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
     public function dashboard()
     {
         return view('vendors.dashboard');
     }
 
-    public function sims()
+    public function sims($showOffline = false)
     {
-        $result = $this->vendorService->simsListView();
+        $result = $this->vendorService->simsListView($showOffline);
         if ($result['status'] == 0 )
         {
             return response()->json(
@@ -39,7 +73,7 @@ class VendorController
     public function simsActivities(string $simId)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $simId);
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . $simId);
             $result = $this->vendorService->fetchSimActivities($simId);
             if ($result['status'] == 0 )
             {
@@ -51,7 +85,7 @@ class VendorController
                     )
                 );
             }
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult($result['data']));
         } catch (Exception $e) {
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());
@@ -68,7 +102,7 @@ class VendorController
     public function dashboardFilter(Request $request)
     {
         try {
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ' . json_encode($request->all()));
             $start = $request->startDate;
             $end = $request->endDate;
             $result = $this->vendorService->dashboardView($start, $end);
@@ -82,7 +116,7 @@ class VendorController
                     )
                 );
             }
-            Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
+            // Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return response()->json(ApiService::returnResult($result['data']));
         } catch (Exception $e) {
             Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - ' . $e->getFile() . " - " . $e->getLine());

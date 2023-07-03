@@ -167,6 +167,10 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                 const selection = $('#serviceSelect').val();
                 const network = $('#networkSelect').val();
                 const phone = $('#phoneNumber').val();
+                el = $(this)
+                
+                el.html(`<i class="fa-solid fa-circle-notch fa-spin"></i>`)
+                el.prop( "disabled", true )
 
                 if(selection == null)
                 {
@@ -181,6 +185,8 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                     type: "POST",
                     cache: false,
                     success: function (data) {
+                        el.html('Rent')
+                        el.prop( "disabled", false )
                         if (data.status != 200)
                         {
                             return vt.error(data.message, {
@@ -193,7 +199,6 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                             title: "Thuê thành công",
                             position: "top-right",
                         })
-                        console.log(data)
                         addToTable(data.requestId, data.name, data.price, data.phone, data.createdTime)
                     },
                     error: function (e) {

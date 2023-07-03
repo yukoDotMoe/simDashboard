@@ -67,10 +67,12 @@ class CheckActivities extends Command
                     Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Sim not valid');
                     $out->writeln("[!] Number '" . $activity['phone'] . "' not valid. Aborted...");
                 }else{
-                    if ($phone->status == 2)
+                    if ($phone['status'] == 2)
                     {
-                        SimsService::addSimResult($phone['uniqueId'], $activity['serviceId'], $activity['uniqueId'], 0, 'Timeout');
+                        SimsService::addSimResult($phone['phone'], $activity['serviceId'], $activity['uniqueId'], 0, $phone['userid'], 'Timeout');
                         $updatePhone = Sims::where('uniqueId', $phone['uniqueId'])->update(['status' => 1, 'failed' => $phone['failed']+1]); // Make phone available
+                        SimsService::checkLock($phone['uniqueId'], $activity['serviceId']);
+                        $out->writeln("[%] Number '" . $activity['phone'] . "' changed to available");
                     }
                 }
 
@@ -127,6 +129,7 @@ class CheckActivities extends Command
                 if (isset($metadataRequest['isApi'])) {
                     if ( !$metadataRequest['isApi']) $pusher->trigger('user-flow.' . $transaction['accountId'], 'simFailed', $data);
                 }
+                
                 Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Finish Closing request - ' . $activity['uniqueId']);
                 $out->writeln("[%] Finished update job ID '" . $activity['uniqueId'] . "'.");
             }

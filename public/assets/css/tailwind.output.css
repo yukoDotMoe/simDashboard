@@ -164,9 +164,15 @@ button {
     background-image: none;
     padding: 0;
 }
-button:focus {
-    outline: 1px dotted;
-    outline: 5px auto -webkit-focus-ring-color;
+/*button:focus {*/
+/*    color: #7e3af2 !important;*/
+    /*outline: 1px dotted;*/
+    /*outline: 5px auto -webkit-focus-ring-color;*/
+/*}*/
+button[aria-selected="true"]
+{
+    font-weight: 500 !important;
+    color: #7e3af2 !important;
 }
 fieldset,
 ol,

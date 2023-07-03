@@ -41,14 +41,8 @@
                 <!-- Modal description -->
                 <form>
                     <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Tên</span>
+                        <span class="text-gray-700 dark:text-gray-400">Username</span>
                         <input id="username" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"/>
-                    </label>
-
-                    <label class="mb-4 block text-sm">
-                        <span class="text-gray-700 dark:text-gray-400">Email</span>
-                        <input class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                                id="email" type="email" />
                     </label>
 
                     <label class="mb-4 block text-sm">
@@ -173,34 +167,26 @@
         </div>
     </div>
 
-    <div class="w-full mb-8 overflow-hidden bg-white rounded-lg shadow-md">
+    <div class="w-full mb-8 overflow-hidden rounded-lg">
         <div class="w-full overflow-x-auto">
-            <table class="w-full whitespace-no-wrap">
-                <thead>
-                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                    <th class="px-4 py-3">ID</th>
-                    <th class="px-4 py-3">Tên</th>
-                    <th class="px-4 py-3">Email</th>
-                    <th class="px-4 py-3">Số Điện Thoại</th>
-                    <th class="px-4 py-3">Số Dư</th>
-                    <th class="px-4 py-3">Số Lần Thuê</th>
-                    <th class="px-4 py-3">Trạng Thái</th>
-                    <th class="px-4 py-3">Tạo Vào</th>
-                    <th class="px-4 py-3">Hành Động</th>
-                </tr>
-                </thead>
-                <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
+            <div id="users"></div>
+        </div>
+    </div>
+@endsection
+
+@section('js')
+    <script>
+        $( document ).ready(function() {
+            const dataList = [
                 @foreach($data['users'] as $task)
-                    <tr class="text-gray-700 dark:text-gray-400">
-                        <td class="px-4 py-3 text-sm">{{ $task['id'] }}</td>
-                        <td class="px-4 py-3 text-sm @if($task['ban'] == 1) text-red-700 @else @if($task['admin']) text-purple-600 font-bold @endif @endif">{{ $task['name'] }}</td>
-                        <td class="px-4 py-3 text-sm">{{ $task['email'] }}</td>
-                        <td class="px-4 py-3 text-sm">{{ $task['phoneNumber'] ?? 'Trống' }}</td>
-                        <td class="px-4 py-3 text-sm">{{ number_format($task['balance'], 0, '', ',') }} VND</td>
-                        <td class="px-4 py-3 text-sm">{{ $task['totalRent'] }}</td>
-                        <td class="px-4 py-3 text-sm">@if($task['ban'] == 1) Bị khoá @else Hoạt động @endif</td>
-                        <td class="px-4 py-3 text-sm">{{ $task['created_at']}}</td>
-                        <td class="px-4 py-3">
+                [
+                    "{{ $task['id'] }}",
+                    "{{ $task['username'] }}",
+                    "{{ number_format($task['balance'], 0, '', ',') ?? 0 }}",
+                    "{{ $task['totalRent'] ?? 0 }}",
+                    "@if($task['ban'] == 1) Khoá @else Hoạt Động @endif",
+                    "{{ $task['created_at'] }}",
+                    gridjs.html(`
                             <div class="flex items-center space-x-4 text-sm">
                                 <button @click="openModal" data-user="{{ $task['id'] }}" class="editBtn flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray" aria-label="Edit">
                                     <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
@@ -221,19 +207,45 @@
                                     </button>
                                 @endif
                             </div>
-                        </td>
-                    </tr>
+                    `),
+                ],
                 @endforeach
-                </tbody>
-            </table>
-            {!! $data['users']->links() !!}
-        </div>
-    </div>
-@endsection
+            ];
+            
+            const grid = new gridjs.Grid({
+                columns: [
+                    { name: 'ID',
+                        attributes: (cell) => {
+                            if (cell) {
+                                return {
+                                    'data-user':cell
+                                };
+                            }
+                    }},
+                    "Username",
+                    "Số dư",
+                    "Sim đã thuê",
+                    "Trạng Thái",
+                    "Ngày Tạo",
+                    {
+                        name: "Hành Động",
+                        sort: false
+                    }
+                ],
+                data: dataList,
+                styles: {
+                    th: {
+                        'font-size': '8px !important'
+                    }
+                },
+                search: true,
+                sort: {
+                    multiColumn: false
+                },
 
-@section('js')
-    <script>
-        $( document ).ready(function() {
+                pagination: true
+            }).render(document.getElementById("users"));
+            
             $('#randompass').click(function (e) {
                 e.preventDefault()
 
@@ -246,15 +258,7 @@
                 $('input[name="token"]').val(retVal)
             })
 
-            function fillToModal(data) {
-                if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
-                $('#username').val(data.name);
-                $('#userId').text(data.id);
-                $('#email').val(data.email);
-                $('#token').val(data.api_token);
-                $('#balanceEdit').attr('data-user', data.id);
-                $('#accountEdit').attr('data-user', data.id);
-            }
+
 
             function validateEmail($email) {
                 var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
@@ -268,7 +272,6 @@
                 })
                 const userid = $(this).attr('data-user');
                 const username = $('#username');
-                const email = $('#email');
                 const password = $('#password');
                 const token = $('#token');
 
@@ -288,17 +291,9 @@
                     </span>`)
                 }
 
-                if(!email.val() || !validateEmail(email.val()))
-                {
-                    return email.parent().append(`
-                    <span class="text-xs text-red-600 dark:text-red-400 error">
-                      Email không hợp lệ
-                    </span>`)
-                }
 
                 toBePost = {
-                    name: username.val(),
-                    email: email.val(),
+                    username: username.val(),
                     api_token: token.val(),
                 }
 
@@ -402,21 +397,6 @@
                     }
                 });
             })
-            $('.editBtn').click(function (e) {
-                e.preventDefault()
-                const userid = $(this).attr('data-user');
-
-                $.ajax({
-                    type: "POST",
-                    url: "{{ route('admin.users') }}/"+userid,
-                    cache: false,
-                    success: function (data) {
-                        fillToModal(data)
-                    },
-                    error: function (e) {
-                    }
-                });
-            })
 
             $('#searchBtn').click(function (e) {
                 e.preventDefault()
@@ -434,6 +414,32 @@
                 });
             })
         });
+        
+                    function fillToModal(data) {
+                if(jQuery.isEmptyObject(data)) return alert('Không tìm thấy');
+                $('#username').val(data.username);
+                $('#userId').text(data.id);
+                $('#token').val(data.api_token);
+                $('#balanceEdit').attr('data-user', data.id);
+                $('#accountEdit').attr('data-user', data.id);
+            }
+        
+        $(document).on('click','.editBtn',function(e){
+                            e.preventDefault()
+                const userid = $(this).attr('data-user');
+
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('admin.users') }}/"+userid,
+                    cache: false,
+                    success: function (data) {
+                        console.log(data)
+                        fillToModal(data)
+                    },
+                    error: function (e) {
+                    }
+                });
+        })
 
         $(document).on('click','.delete',function(e){
             e.preventDefault();

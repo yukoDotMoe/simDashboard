@@ -16,7 +16,7 @@
             </div>
             <div>
                 <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Tổng số lượng sim</p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> {{ number_format($data['count']['sims']['alive']) }} đang chạy ({{ number_format($data['count']['sims']['died']) }} đã chết) </p>
+                <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> {{ $data['count']['sims']['alive'] }} đang chạy ({{ number_format($data['count']['sims']['died']) }} đã chết) </p>
             </div>
         </div>
         <!-- Card -->
@@ -93,24 +93,9 @@
                     </div>
                 </div>
             </div>
-            <div class="w-full mb-8 overflow-hidden bg-white rounded-lg shadow-md">
+            <div class="w-full mb-8 overflow-hidden rounded-lg">
                 <div class="w-full overflow-x-auto">
-                    <table class="w-full whitespace-no-wrap">
-                        <thead>
-                        <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
-                            <th class="px-4 py-3">ID</th>
-                            <th class="px-4 py-3">Người dùng</th>
-                            <th class="px-4 py-3">Dịch vụ</th>
-                            <th class="px-4 py-3">Trạng thái</th>
-                            <th class="px-4 py-3">Số tiền</th>
-                            <th class="px-4 py-3">Số dư cũ</th>
-                            <th class="px-4 py-3">Số dư mới</th>
-                            <th class="px-4 py-3">Sử dụng vào</th>
-                        </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800" id="activitiesTable">
-                        </tbody>
-                    </table>
+                    <div id="payments"></div>
                 </div>
             </div>
 {{--        </p>--}}
@@ -182,25 +167,75 @@
                 }
                 return value;
             }
+            
+            let firstTime = true;
+            let paymentsTable;
 
             function fillInTable(data) {
-                tableDiv = $('#activitiesTable')
-                tableDiv.html(``)
+                // tableDiv = $('#activitiesTable')
+                // tableDiv.html(``)
+                transactions = [];
                 data.transactions.forEach(function (item) {
                     if(item.status == 0 || item.status == 5) return;
-                    tableDiv.append(`
-                    <tr class="text-gray-700 dark:text-gray-400">
-                        <td class="px-4 py-3 text-sm">${item.id}</td>
-                        <td class="px-4 py-3 text-sm">${item.userid}</td>
-                        <td class="px-4 py-3 text-sm">${(item.serviceName == null) ? 'Điều chỉnh' : item.serviceName}</td>
-                        <td class="px-4 py-3 text-sm">${statusBadge(item.status)}</td>
-                        <td class="px-4 py-3 text-sm">${item.typeText} ${parseInt(item.amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                        <td class="px-4 py-3 text-sm">${parseInt(item.old).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                        <td class="px-4 py-3 text-sm">${parseInt(item.new).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                        <td class="px-4 py-3 text-sm">${moment(item.date).lang("vi").format('llll')}</td>
-                    </tr>
-                    `)
+                    transactions.push({ 
+                        id: item.id, 
+                        userid: item.userid, 
+                        service: (item.serviceName == null) ? 'Điều chỉnh' : item.serviceName, 
+                        status: gridjs.html(statusBadge(item.status)), 
+                        change: `${item.typeText} ${parseInt(item.amount).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`,  
+                        oldBal: parseInt(item.old).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }), 
+                        newBal: parseInt(item.new).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }), 
+                        date: moment(item.date).lang("vi").format('llll')
+                    })
                 })
+                if(firstTime)
+                {
+                    $('#payments').html(``)
+                    firstTime = false;
+                    paymentsTable = new gridjs.Grid({
+                        columns: ["ID", {
+                            name: "Người dùng",
+                            id: "userid"
+                        },{
+                            name: "Dịch vụ",
+                            id: "service"
+                        },{
+                            name: "Trạng thái",
+                            id: "status"
+                        },{
+                            name: "Số lượng",
+                            id: "change"
+                        },{
+                            name: "SD cũ",
+                            id: "oldBal"
+                        },{
+                            name: "SD mới",
+                            id: "newBal"
+                        },{
+                            name: "Thời gian",
+                            id: "date"
+                        }],
+                        data: transactions,
+                        search: true,
+                        sort: {
+                            multiColumn: false
+                        },
+                        pagination: {
+                            limit: 10,
+                            summary: false
+                        }
+                    }).render(document.getElementById("payments"));
+                    
+                    totalProfit = 0;
+
+                    data.transactions.forEach(function (e) {
+                        totalProfit += e.amount;
+                    })
+                }else{
+                    paymentsTable.updateConfig({
+                        data: data.transactions
+                    }).forceRender();
+                }
             }
 
             function fillContent(start, end, page = 1)
@@ -214,7 +249,6 @@
                     encode: true,
                     success: function (data) {
                         data = data.data
-                        console.log(data)
                         calcTopup(data)
                         calcCharged(data)
                         fillInTable(data)
@@ -279,7 +313,7 @@
                                 position: "top-right",
                             })
                         }
-                        vt.success("Đã tạo dịch vụ thành công", {
+                        vt.success("Đã lưu thành công", {
                             title: "Thành công",
                             position: "top-right",
                         })
