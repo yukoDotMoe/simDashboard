@@ -937,6 +937,15 @@ class SimsService
                 }
                 $phone = $this->simsRepo->newestPhone($serviceId, $networkId == 'all' ? null : $networkId);
             }
+
+            if(!$phone)
+            {
+                Log::error(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - Error - Phone not found');
+                return [
+                    'status' => 0,
+                    'error' => 'No phone number available'
+                ];
+            }
             
             $locked = DB::table('sim_lock')->where([
                 ['phone', $phone->phone],

@@ -46,7 +46,7 @@
 
                 <label class="mb-4 block text-sm">
                     <span class="text-gray-700 dark:text-gray-400">Số nhất định</span>
-                    <input placeholder="Available as soon as that number is in active state."
+                    <input placeholder="Thuê được nếu số này đang trống"
                            id="phoneNumber" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
                 </label>
             </div>
@@ -189,8 +189,25 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                         el.prop( "disabled", false )
                         if (data.status != 200)
                         {
-                            return vt.error(data.message, {
-                                title: "Error",
+                            var msgErr = ''
+                            switch (data.message) {
+                                case 'No phone number available':
+                                    msgErr = 'Không sim nào có sẵn'
+                                    break;
+                                case 'Phone number not available':
+                                    msgErr = 'Sim không khả dụng'
+                                    break;
+                                case 'Phone not found':
+                                    msgErr = 'Sim không tồn tại'
+                                    break;
+                                case 'Your balance is not satisfied the transaction, please top-up more':
+                                    msgErr = 'Số dư không đủ'
+                                    break;
+                                default:
+                                    break;
+                            }
+                            return vt.error(msgErr, {
+                                title: "Không thành công",
                                 position: "top-right",
                             })
                         }
