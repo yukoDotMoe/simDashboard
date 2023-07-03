@@ -5,18 +5,18 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Renting Service
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Dịch vụ cho thuê
         <p class="text-xs text-gray-600 dark:text-gray-200">
-            Enable rent filter will not cost you extra, why not try it?
+            Chúng tôi có sẵn bộ lọc sim, bạn có thể thử mà không mất phí!
         </p></h2>
 
     <div class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <p class="text-sm text-gray-600 dark:text-gray-400">
             <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-400"> Select Service </span>
+                <span class="text-gray-700 dark:text-gray-400"> Chọn dịch vụ </span>
                 <select id="serviceSelect" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray">
                 @if(count($data['services']) == 0)
-                    <option selected disabled>No services found on our server.</option>
+                    <option selected disabled>Không có dịch vụ có sẵn.</option>
                 @else
                     @foreach($data['services'] as $service)
                         <option value="{{ $service['uniqueId'] }}" data-name="{{ $service['serviceName'] }}" data-price="{{ number_format($service['price'],0,'',',') }}">{{ $service['serviceName'] }} ({{ number_format($service['price'],0,'',',') }} VND)</option>
@@ -26,17 +26,17 @@
             </label>
             <div class="flex items-center mt-4 mb-4">
                 <input id="checkbox-2" type="checkbox" value="" class="border-2 p-3 rounded-lg w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                <label for="checkbox-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 ">Enable rent filter
+                <label for="checkbox-2" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 ">Sử dụng bộ lọc
                 </label>
             </div>
             <div class="grid md:grid-cols-2 gap-6 hidden" id="valueDiv">
                 <label class="block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400"> Select Network </span>
+                    <span class="text-gray-700 dark:text-gray-400"> Chọn nhà mạng </span>
                     <select id="networkSelect" class="block w-full mt-1 text-sm dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 form-select focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray">
                         @if(count($data['networks']) == 0)
-                            <option selected disabled>No networks found on our server.</option>
+                            <option selected disabled>Không có nhà mạng có sẵn.</option>
                         @else
-                            <option value="all" data-name="all">Any Network</option>
+                            <option value="all" data-name="all">Nhà mạng bất kì</option>
                             @foreach($data['networks'] as $service)
                                 <option value="{{ $service['uniqueId'] }}" data-name="{{ $service['networkName'] }}">{{ $service['networkName'] }}</option>
                             @endforeach
@@ -45,7 +45,7 @@
                 </label>
 
                 <label class="mb-4 block text-sm">
-                    <span class="text-gray-700 dark:text-gray-400">Specific number</span>
+                    <span class="text-gray-700 dark:text-gray-400">Số nhất định</span>
                     <input placeholder="Available as soon as that number is in active state."
                            id="phoneNumber" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input">
                 </label>
@@ -54,7 +54,7 @@
             px-4 py-2 mt-4 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg opacity-50 cursor-not-allowed focus:outline-none
 @else
 px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple
-@endif"> Rent </button>
+@endif"> Thuê sim </button>
         </p>
     </div>
 
@@ -64,12 +64,12 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                 <thead>
                 <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
                     <th class="px-4 py-3">ID</th>
-                    <th class="px-4 py-3">Service</th>
-                    <th class="px-4 py-3">Price</th>
-                    <th class="px-4 py-3">Phone Number</th>
-                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">Dịch vụ</th>
+                    <th class="px-4 py-3">Giá</th>
+                    <th class="px-4 py-3">Số</th>
+                    <th class="px-4 py-3">Trạng thái</th>
                     <th class="px-4 py-3">Code</th>
-                    <th class="px-4 py-3">Date</th>
+                    <th class="px-4 py-3">Thời gian</th>
                 </tr>
                 </thead>
                 <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800" id="rentTable">
@@ -81,7 +81,7 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                             <td class="px-4 py-3 text-sm phoneNumber" id="phoneNumber"> {{  $task['phone'] }} </td>
                             <td class="px-4 py-3 text-sm" id="status">
                                 <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                  Waiting
+                                  Đang chờ
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm code" id="code"></td>
@@ -103,8 +103,8 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
             sampleTextarea.select(); //select textarea contenrs
             document.execCommand("copy");
             document.body.removeChild(sampleTextarea);
-            vt.success(`Copied "${text}" to your clipboard.`, {
-                title: "Text copied",
+            vt.success(`Đã sao chép "${text}".`, {
+                title: "Thành công",
                 position: "top-right",
             })
         }
@@ -157,8 +157,8 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
             channel.bind('simFailed', function(data) {
                 const tableRow = $(`tr[id="${data.uniqueId}"]`);
                 tableRow.children('#status').html(failedBadge);
-                return vt.error("Due to timeout or exception, your requested sim has been canceled", {
-                    title: "Sim failed to finish task",
+                return vt.error("Do hết thời gian, yêu cầu thuê của bạn đã bị huỷ và được hoàn tiền.", {
+                    title: "Thuê thất bại",
                     position: "top-right",
                 })
             });
@@ -170,7 +170,7 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
 
                 if(selection == null)
                 {
-                    return vt.error("No options available from our site", {
+                    return vt.error("Không lựa chọn nào có sẵn", {
                         title: "Error",
                         position: "top-right",
                     })
@@ -189,8 +189,8 @@ px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-c
                             })
                         }
                         data = data.data
-                        vt.success(`Your rent request has been sent.`, {
-                            title: "Request Created",
+                        vt.success(`Yêu cầu đã được tạo và chờ xử lí.`, {
+                            title: "Thuê thành công",
                             position: "top-right",
                         })
                         console.log(data)

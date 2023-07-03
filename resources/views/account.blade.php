@@ -5,17 +5,17 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Account Settings <p class="text-xs text-gray-600 dark:text-gray-200">
-            Allow you to manage personal information and rental preferences.
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Cài đặt tài khoản <p class="text-xs text-gray-600 dark:text-gray-200">
+            Tuỳ chỉnh thông tin tài khoản của bạn
         </p></h2>
     <a class="flex items-center justify-between p-4 mb-6 text-sm font-semibold text-purple-100 bg-purple-600 rounded-lg shadow-md focus:outline-none focus:shadow-outline-purple">
         <div class="flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
             </svg>
-            <span>Your token: <strong id="copyToken">{{ Auth::user()->api_token }}</strong> </span>
+            <span>Token hiện tại: <strong id="copyToken">{{ Auth::user()->api_token }}</strong> </span>
         </div>
-        <button @click="openModal">| Click here to reset</button>
+        <button @click="openModal">| Bấm để reset.</button>
     </a>
 
     <div class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
@@ -23,22 +23,22 @@
         <form action="{{ route('accounts.changePass') }}" method="POST">
             @csrf
             <label class="block text-sm mt-2 mb-4">
-                <span class="text-gray-700 dark:text-gray-400">Current Password</span>
+                <span class="text-gray-700 dark:text-gray-400">Mật khẩu hiện tại</span>
                 <input type="password" name="current_password" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" required>
             </label>
 
             <label class="block text-sm mt-2 mb-4">
-                <span class="text-gray-700 dark:text-gray-400">New Password</span>
+                <span class="text-gray-700 dark:text-gray-400">Mật khẩu mới</span>
                 <input type="password" name="new_password" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" required>
             </label>
 
             <label class="block text-sm mt-2 mb-4">
-                <span class="text-gray-700 dark:text-gray-400">Re-type New Password</span>
+                <span class="text-gray-700 dark:text-gray-400">Nhập lại mật khẩu</span>
                 <input type="password" name="new_password_confirmation" class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input" required>
             </label>
 
             <button id="createService" class="block w-full px-4 py-2 mt-4 text-sm font-medium leading-5 text-center text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-                Change Password
+                Đổi mật khẩu
             </button>
         </form>
         </p>
@@ -77,11 +77,11 @@
                 <p
                         class="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300"
                 >
-                    Reset your API token?
+                    Đặt lại API key của bạn
                 </p>
                 <!-- Modal description -->
                 <p class="text-sm text-gray-700 dark:text-gray-400">
-                    This option is only needed when you think your token got problem or someone stole it, if not please don't use it. Sincerely, the dev team.
+                    Chức năng này chỉ dành cho người dùng nào thật sự cần thiết, nếu không đặt lại sẽ tốn thời gian và chả được tích sự gì. Bạn có chắc muốn tiếp tục?
                 </p>
             </div>
             <footer
@@ -91,12 +91,12 @@
                         @click="closeModal"
                         class="w-full px-5 py-3 text-sm font-medium leading-5 text-white text-gray-700 transition-colors duration-150 border border-gray-300 rounded-lg dark:text-gray-400 sm:px-4 sm:py-2 sm:w-auto active:bg-transparent hover:border-gray-500 focus:border-gray-500 active:text-gray-500 focus:outline-none focus:shadow-outline-gray"
                 >
-                    Cancel
+                    Không
                 </button>
                 <button id="resetToken"
                         class="w-full px-5 py-3 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg sm:w-auto sm:px-4 sm:py-2 active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
                 >
-                    Accept
+                    Có
                 </button>
             </footer>
         </div>
@@ -119,8 +119,8 @@
                             position: "top-right",
                         })
                     }
-                    vt.success("Your token has been reset", {
-                        title: "Successfully",
+                    vt.success("Bạn vui lòng cập nhật lại token mới trong ứng dụng của bạn nữa nhé!", {
+                        title: "Token đã được đặt lại",
                         position: "top-right",
                     })
                     $('#close').click()

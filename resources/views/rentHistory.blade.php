@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Rent History <p class="text-xs text-gray-600 dark:text-gray-200">
-            Access your previous rentals and keep track of your sim usage.
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Lịch sử thuê <p class="text-xs text-gray-600 dark:text-gray-200">
+            Liệt kê những sim bạn đã thuê từ dịch vụ của chúng tôi.
         </p></h2>
 
     <div class="w-full mb-8 overflow-hidden">
@@ -34,8 +34,8 @@
                 sampleTextarea.select();
                 document.execCommand("copy");
                 document.body.removeChild(sampleTextarea);
-                vt.success(`Copied "${text}" to your clipboard.`, {
-                    title: "Text copied",
+                vt.success(`Đã sao chép "${text}".`, {
+                    title: "Thành công",
                     position: "top-right",
                 })
             }
@@ -49,12 +49,12 @@
             $('input[name="daterange"]').daterangepicker({
                 "autoApply": true,
                 ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                    'Hôm nay': [moment(), moment()],
+                    'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+                    '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+                    'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+                    'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 },
                 "alwaysShowCalendars": true,
                 "startDate": moment().subtract(7, 'days'),
@@ -73,13 +73,13 @@
                 var tobereturn = ``
                 switch (parseInt(status)) {
                     case 0:
-                        tobereturn = `Timeout`
+                        tobereturn = `Hết hạn`
                         break;
                     case 1:
-                        tobereturn = `Completed`
+                        tobereturn = `Hoàn tất`
                         break;
                     case 2:
-                        tobereturn = `Waiting`
+                        tobereturn = `Đang chờ`
                         break;
                 }
                 return tobereturn;
@@ -108,7 +108,22 @@
                 if(firstTime)
                 {
                     requestsTable = new gridjs.Grid({
-                        columns: ["ID", "Service", "Price", "Number","Status", "Code", "Date"],
+                        columns: ["ID", {
+                            name: "Dịch vụ",
+                            id: 'service'
+                        }, {
+                            name: "Giá",
+                            id: 'price'
+                        }, {
+                            name: "Số",
+                            id: 'number'
+                        }, {
+                            name: "Trạng thái",
+                            id: 'status'
+                        }, "Code", {
+                            name: "Thời gian",
+                            id: 'date'
+                        }],
                         data: fixedArray,
                         search: true,
                         sort: {

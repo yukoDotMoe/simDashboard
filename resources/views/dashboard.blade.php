@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Dashboard <p class="text-xs text-gray-600 dark:text-gray-200">
-            Manage your sim rentals with ease.
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Trang chủ <p class="text-xs text-gray-600 dark:text-gray-200">
+            Quản lí thông tin giao dịch của bạn
         </p></h2>
 
     <!-- Cards -->
@@ -19,8 +19,8 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Account Status </p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> Active </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Trạng thái </p>
+                <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> Hoạt động </p>
             </div>
         </div>
         <div class="flex items-center p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
@@ -30,7 +30,7 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Account balance </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Số dư </p>
                 <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> {{ number_format(Auth::user()->balance, 0, '', ',') }} </p>
             </div>
         </div>
@@ -42,14 +42,14 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Total Sim Rented </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Số sim đã thuê </p>
                 <p class="text-lg font-semibold text-gray-700 dark:text-gray-200"> {{ Auth::user()->totalRent }} </p>
             </div>
         </div>
 
     </div>
 
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Payments History    </h2>
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Lịch sử giao dịch    </h2>
     <div class="mb-4 relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400 shadow-md">
         <input name="daterange" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input" placeholder="Jane Doe">
         <div class="absolute inset-y-0 flex items-center ml-3 pointer-events-none">
@@ -75,12 +75,12 @@
             $('input[name="daterange"]').daterangepicker({
                 "autoApply": true,
                 ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                    'Hôm nay': [moment(), moment()],
+                    'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+                    '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+                    'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+                    'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 },
                 "alwaysShowCalendars": true,
                 "startDate": moment().subtract(7, 'days'),
@@ -115,10 +115,19 @@
                 if(firstTime)
                 {
                     paymentsTable = new gridjs.Grid({
-                        columns: ["Date", "Amount", "Status",{
-                            name:  "Request ID",
+                        columns: [{
+                            id: "date",
+                            name: "Thời gian"
+                        },{
+                            id: "amount",
+                            name: "Số tiền"
+                        },{
+                            id: "status",
+                            name: "Trạng thái"
+                        },{
+                            name:  "ID",
                             id: "request"
-                        }, "Description"],
+                        }],
                         data: fixedArray,
                         search: true,
                         sort: {
@@ -159,42 +168,35 @@
                     case 0:
                         tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                          Refunded
+                          Hoàn tiền
                         </span>
                         `
                         break;
                     case 1:
                         tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
+                                            Đã mua
                                         </span>
                         `
                         break;
                     case 2:
                         tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          On-hold
+                                          Đang giữ
                                         </span>
                         `
                         break;
                     case 3:
                         tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                                          Top-up
+                                          Nạp tiền
                                         </span>
                         `
                         break;
                     case 4:
                         tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          Adjusted
-                                        </span>
-                        `
-                        break;
-                    case 5:
-                        tobereturn = `
-                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
+                                          Trừ tiền
                                         </span>
                         `
                         break;

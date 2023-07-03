@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="description" content="Rent temporary sim cards for mobile connectivity without long-term commitment or high costs. Get connected easily and affordably.">
-    <title>{{ config('app.name', 'Laravel') }} - Reliable SIM renting platform</title>
+    <title>{{ config('app.name', 'Laravel') }} - Sàn cung cấp sim đáng tin cậy</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/index.350e2433.css"/>
@@ -47,7 +47,7 @@
                                     <li class="astro-UY3JLCBK">
                                         <a href="{{ route('login') }}"
                                            class="block md:px-4 transition hover:text-primary astro-UY3JLCBK">
-                                            <span class="astro-UY3JLCBK">Login</span>
+                                            <span class="astro-UY3JLCBK">Đăng nhập</span>
                                         </a>
                                     </li>
                                 @endauth
@@ -58,7 +58,7 @@
                             <div class="mt-12 lg:mt-0 astro-UY3JLCBK">
                                 <a href="{{ url('/dashboard') }}"
                                    class="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-primary before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max astro-UY3JLCBK">
-                                    <span class="relative text-sm font-semibold text-white astro-UY3JLCBK">Dashboard</span>
+                                    <span class="relative text-sm font-semibold text-white astro-UY3JLCBK">Trang chủ</span>
                                 </a>
                             </div>
                         @else
@@ -66,7 +66,7 @@
                                 <div class="mt-12 lg:mt-0 astro-UY3JLCBK">
                                     <a href="{{ route('register') }}"
                                        class="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-primary before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max astro-UY3JLCBK">
-                                        <span class="relative text-sm font-semibold text-white astro-UY3JLCBK">Register</span>
+                                        <span class="relative text-sm font-semibold text-white astro-UY3JLCBK">Đăng kí</span>
                                     </a>
                                 </div>
                             @endif

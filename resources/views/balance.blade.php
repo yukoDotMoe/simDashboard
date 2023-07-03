@@ -5,8 +5,8 @@
 @endsection
 
 @section('content')
-    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Balance <p class="text-xs text-gray-600 dark:text-gray-200">
-            Store your payment information safely and easily access your funds.
+    <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"> Số dư <p class="text-xs text-gray-600 dark:text-gray-200">
+            Quản lí số dư từ tài khoản của bạn.
         </p></h2>
     <div class="mb-4 relative text-gray-500 focus-within:text-purple-600 dark:focus-within:text-purple-400 shadow-md">
         <input name="daterange" class="block w-full pl-10 mt-1 text-sm text-black dark:text-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:focus:shadow-outline-gray form-input" placeholder="Jane Doe">
@@ -25,7 +25,7 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Current Available Balance </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Số dư khả dụng </p>
                 <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ number_format(Auth::user()->balance, 0, '', ',') }}</p>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Total Spent </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Đã tiêu </p>
                 <p class="text-lg font-semibold text-gray-700 dark:text-gray-200" id="totalSpent"><i class="fa-solid fa-circle-notch fa-spin"></i></p>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 </svg>
             </div>
             <div>
-                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Total Top-up </p>
+                <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400"> Đã nạp </p>
                 <p class="text-lg font-semibold text-gray-700 dark:text-gray-200" id="totalTopup"><i class="fa-solid fa-circle-notch fa-spin"></i></p>
             </div>
         </div>
@@ -68,12 +68,12 @@
             $('input[name="daterange"]').daterangepicker({
                 "autoApply": true,
                 ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                    'Hôm nay': [moment(), moment()],
+                    'Hôm qua': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '7 ngày qua': [moment().subtract(6, 'days'), moment()],
+                    '30 ngày qua': [moment().subtract(29, 'days'), moment()],
+                    'Tháng này': [moment().startOf('month'), moment().endOf('month')],
+                    'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 },
                 "alwaysShowCalendars": true,
                 "startDate": moment().subtract(7, 'days'),
@@ -108,7 +108,21 @@
                 if(firstTime)
                 {
                     transactionsTable = new gridjs.Grid({
-                        columns: ["Date", "Amount", "Category", "Description"],
+                        // columns: ["Date", "Amount", "Category", "Description"],
+                        columns: [{
+                            id: 'date',
+                            name: 'Thời gian'
+                        },{
+                            id: 'amount',
+                            name: 'Số lượng'
+                        },
+                        {
+                            id: 'category',
+                            name: 'Danh mục'
+                        },{
+                            id: 'description',
+                            name: 'Mô tả'
+                        }],
                         data: fixedArray,
                         search: true,
                         sort: {
@@ -151,42 +165,35 @@
                 case 0:
                     tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                          Refunded
+                          Hoàn tiền
                         </span>
                         `
                     break;
                 case 1:
                     tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
+                                            Mua dịch vụ
                                         </span>
                         `
                     break;
                 case 2:
                     tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          On-hold
+                                          Đang giữ
                                         </span>
                         `
                     break;
                 case 3:
                     tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100">
-                                          Top-up
+                                          Nạp tiền
                                         </span>
                         `
                     break;
                 case 4:
                     tobereturn = `
                         <span class="px-2 py-1 font-semibold leading-tight text-orange-700 bg-orange-100 rounded-full dark:bg-orange-700 dark:text-orange-100">
-                                          Adjusted
-                                        </span>
-                        `
-                    break;
-                case 5:
-                    tobereturn = `
-                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-700">
-                                            Charged
+                                          Trừ tiền
                                         </span>
                         `
                     break;
