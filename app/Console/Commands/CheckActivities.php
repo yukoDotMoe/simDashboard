@@ -60,7 +60,7 @@ class CheckActivities extends Command
 
                 if(!$transaction)
                 {
-                    $out->writeln("[!] Transaction not found. Aborted.");
+                    $out->writeln("[!] Transaction not found. Aborted. " . $activity['uniqueId'] . ' - ' . $activity['updated_at']);
                     continue;
                 }
 
