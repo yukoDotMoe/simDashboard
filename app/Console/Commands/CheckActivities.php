@@ -57,6 +57,14 @@ class CheckActivities extends Command
 
             foreach ($activities as $activity) {
                 $transaction = Balance::where('activityId', $activity['uniqueId'])->first();
+
+                $user = User::where('id', $transaction['accountId'])->first();
+
+                if(!$user)
+                {
+                    $out->writeln("[%] User ID '" . $transaction['accountId'] . "' not found. Aborted.");
+                    continue;
+                }
                 
                 $phone = Sims::where([
                     ['phone', $activity['phone']],
@@ -75,8 +83,6 @@ class CheckActivities extends Command
                         $out->writeln("[%] Number '" . $activity['phone'] . "' changed to available");
                     }
                 }
-
-                $user = User::where('id', $transaction['accountId'])->first();
 
                 DB::beginTransaction();
                 $activityUpdate = Activity::where('uniqueId', $transaction['activityId'])->update(['status' => 0, 'reason' => 'Failed due to timeout']);
