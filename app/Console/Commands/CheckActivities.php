@@ -58,13 +58,13 @@ class CheckActivities extends Command
             foreach ($activities as $activity) {
                 $transaction = Balance::where('activityId', $activity['uniqueId'])->first();
 
-                $user = User::where('id', $transaction['accountId'])->first();
-
-                if(!$user)
+                if(!$transaction)
                 {
-                    $out->writeln("[%] User ID '" . $transaction['accountId'] . "' not found. Aborted.");
+                    $out->writeln("[!] Transaction not found. Aborted.");
                     continue;
                 }
+
+                $user = User::where('id', $transaction['accountId'])->first();
                 
                 $phone = Sims::where([
                     ['phone', $activity['phone']],
