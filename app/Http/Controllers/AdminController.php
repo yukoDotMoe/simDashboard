@@ -75,7 +75,7 @@ class AdminController extends Controller
     public function getUser($id)
     {
         if(preg_match("/[a-z]/i", $id)) {
-            $result = User::where('email', $id)->first();
+            $result = User::where('username', $id)->first();
         }else
         {
             $result = User::where('id', $id)->first();
