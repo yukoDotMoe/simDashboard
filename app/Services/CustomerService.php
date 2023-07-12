@@ -309,7 +309,7 @@ class CustomerService
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start - ');
             $users = User::where([
                 ['tier', '<', 10],
-            ])->paginate(20);
+            ])->get();
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - End - ');
             return [
                 'status' => 1,
