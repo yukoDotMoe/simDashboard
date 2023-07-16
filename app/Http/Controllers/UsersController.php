@@ -199,7 +199,7 @@ class UsersController extends Controller
     {
         try {
             Log::info(__CLASS__ . ' - ' . __FUNCTION__ . ' - Start');
-            if ($request->has('token')) {
+            if (!empty(request()->bearerToken())) {
                 $user = User::where('api_token', request()->bearerToken())->first();
             } else {
                 $user = User::where('id', Auth::user()->id)->first();
