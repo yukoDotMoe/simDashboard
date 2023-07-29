@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
+use App\Models\Balance;
 use App\Models\Network;
 use App\Models\Service;
 use App\Models\Sims;
@@ -666,5 +668,27 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.vendors')->with('success', 'Tạo thành công đại lí với id ' . $user);
+    }
+
+    public function getHistory($id)
+    {
+        $user = User::where('id', $id)->first();
+        $transactions = Balance::where('accountId', $id)->get()->transform(function ($item, $key) {
+            $activity = Activity::where('uniqueId', $item->activityId)->first();
+            if(!empty($activity))
+            {
+                $service = Service::where('uniqueId', $activity->serviceId)->first();
+                $item->serviceName = $service->serviceName;
+            }else{
+                $item->serviceName = 'Chỉnh sửa';
+            }
+
+            $item->oldBalance = number_format($item->oldBalance, 0, '', ',');
+            $item->newBalance = number_format($item->newBalance, 0, '', ',');
+
+            return $item;
+        });
+
+        return view('admin.history', ['user' => $user, 'transactions' => $transactions]);
     }
 }

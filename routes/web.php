@@ -60,6 +60,9 @@ Route::group([
         Route::post('/admin/user/edit', [\App\Http\Controllers\AdminController::class, 'updateUser'])->name('admin.userEdit');
         Route::post('/admin/user/veryBadUserUpdate', [\App\Http\Controllers\AdminController::class, 'veryBadUserUpdate'])->name('admin.veryBadUserUpdate');
 
+        Route::get('/admin/users/history/{id}', [\App\Http\Controllers\AdminController::class, 'getHistory'])->name('admin.user.history');
+
+
         Route::get('/admin/sims', [\App\Http\Controllers\AdminController::class, 'adminSimsView'])->name('admin.sims');
         Route::post('/admin/sims/{id}', [\App\Http\Controllers\AdminController::class, 'getSim'])->name('admin.sim');
         Route::post('/admin/phone/{id}', [\App\Http\Controllers\AdminController::class, 'getSimByPhone'])->name('admin.simByPhone');
