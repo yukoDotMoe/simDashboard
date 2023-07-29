@@ -61,6 +61,7 @@ Route::group([
         Route::post('/admin/user/veryBadUserUpdate', [\App\Http\Controllers\AdminController::class, 'veryBadUserUpdate'])->name('admin.veryBadUserUpdate');
 
         Route::get('/admin/users/history/{id}', [\App\Http\Controllers\AdminController::class, 'getHistory'])->name('admin.user.history');
+        Route::post('/admin/users/post/history', [\App\Http\Controllers\AdminController::class, 'getHistoryPost'])->name('admin.user.historyPost');
 
 
         Route::get('/admin/sims', [\App\Http\Controllers\AdminController::class, 'adminSimsView'])->name('admin.sims');

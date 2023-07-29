@@ -232,8 +232,15 @@
                         totalProfit += e.amount;
                     })
                 }else{
-                    paymentsTable.updateConfig({
-                        data: data.transactions
+                    payments.config.plugin.remove("pagination")
+                    payments.config.plugin.remove("search")
+                    payments.updateConfig({
+                        data: transactionsPayment,
+                        pagination: {
+                            limit: 30,
+                            summary: false
+                        },
+                        search: true,
                     }).forceRender();
                 }
             }
@@ -280,14 +287,14 @@
                     'Tháng trước': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                 },
                 "alwaysShowCalendars": true,
-                "startDate": moment().subtract(7, 'days'),
+                "startDate": moment(),
                 "endDate": moment()
             }, function(start, end, label) {
                 fillContent(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'))
             });
 
             fillContent(
-                moment().subtract(7, 'days').format('YYYY-MM-DD'),
+                moment().format('YYYY-MM-DD'),
                 moment().format('YYYY-MM-DD'),
             )
 

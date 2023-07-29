@@ -12,6 +12,7 @@ use App\Services\ApiService;
 use App\Services\CustomerService;
 use App\Services\NetworkService;
 use App\Services\ServiceService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -673,22 +674,49 @@ class AdminController extends Controller
     public function getHistory($id)
     {
         $user = User::where('id', $id)->first();
-        $transactions = Balance::where('accountId', $id)->get()->transform(function ($item, $key) {
-            $activity = Activity::where('uniqueId', $item->activityId)->first();
-            if(!empty($activity))
-            {
-                $service = Service::where('uniqueId', $activity->serviceId)->first();
-                $item->serviceName = $service->serviceName;
-            }else{
-                $item->serviceName = 'Chỉnh sửa';
-            }
+        return view('admin.history', ['user' => $user]);
+    }
 
-            $item->oldBalance = number_format($item->oldBalance, 0, '', ',');
-            $item->newBalance = number_format($item->newBalance, 0, '', ',');
+    public function getHistoryPost(Request $request)
+    {
 
-            return $item;
-        });
+        $start = Carbon::parse($request->startDate);
+        $end = Carbon::parse($request->endDate);
+        $id = User::all();
 
-        return view('admin.history', ['user' => $user, 'transactions' => $transactions]);
+        $transactions = Balance::where('accountId', $request->id)->leftJoin('activitieslog','balanceslog.activityId','=','activitieslog.uniqueId')
+            ->whereDate('balanceslog.created_at','<=',$end)
+            ->whereDate('balanceslog.created_at','>=',$start)
+            ->leftJoin('services', 'services.uniqueId', '=', 'activitieslog.serviceId')
+            ->select(
+                'balanceslog.uniqueId',
+                'balanceslog.accountId',
+                'balanceslog.activityId',
+                'balanceslog.oldBalance',
+                'balanceslog.newBalance',
+                'balanceslog.totalChange',
+                'balanceslog.status',
+                'balanceslog.type',
+                'balanceslog.created_at',
+                'activitieslog.serviceId',
+                'services.serviceName'
+            )
+            ->orderBy('activitieslog.created_at', 'desc')
+            ->get()->transform(function ($item) {
+                return [
+                    'id' => $item['uniqueId'],
+                    'request' => $item['activityId'],
+                    'serviceName' => $item['serviceName'] ?? null,
+                    'old' => $item['oldBalance'],
+                    'new' => $item['newBalance'],
+                    'amount' => $item['totalChange'],
+                    'status' => $item['status'],
+                    'date' => $item['created_at'],
+                ];
+            });
+
+        return response()->json(ApiService::returnResult([
+            'transactions' => $transactions
+        ]));
     }
 }
