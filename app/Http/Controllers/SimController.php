@@ -55,6 +55,8 @@ class SimController extends Controller
             $network = $request->network;
             $phone = $request->number;
 
+            sleep(1);
+
             $result = $this->simsService->basicRent($user->api_token, $serviceId, $network, $isApi, $phone);
 
             if ($result['status'] == 0) {
