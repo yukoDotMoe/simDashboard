@@ -827,9 +827,9 @@ class SimsService
                     'error' => 'No phone number available'
                 ];
             }
-            
-            sleep(1);
-            
+
+            usleep(rand(100, 3000));
+
             DB::beginTransaction();
             // Hold user balance
             $holdBalance = $this->balanceService->subtractBalance($user->id, $service['price'], true);

@@ -97,6 +97,7 @@ class ActivitiesService
                 ];
             }
             DB::beginTransaction();
+            usleep(rand(100, 3000));
             $balanceLog = $this->balanceRepo->update($balanceId, ['activityId' => $id]);
             DB::commit();
             if(!$balanceLog)

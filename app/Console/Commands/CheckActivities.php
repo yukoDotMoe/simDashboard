@@ -87,7 +87,7 @@ class CheckActivities extends Command
                 DB::beginTransaction();
                 $activityUpdate = Activity::where('uniqueId', $transaction['activityId'])->update(['status' => 0, 'reason' => 'Failed due to timeout']);
                 Balance::insert([
-                    'uniqueId' => substr(sha1(date("Y-m-d H:i:s")),0,10),
+                    'uniqueId' => substr(uniqid().date("sihdmY"),6,10),
                     'accountId' => $transaction['accountId'],
                     'oldBalance' => $user->balance,
                     'newBalance' => $user->balance + $transaction['totalChange'],

@@ -26,6 +26,15 @@ class BalanceService
         $this->simsRepo = $simsRepo;
     }
 
+    protected function generateRandomString($length = 10) {
+        $characters = '0123456789';
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $randomString;
+    }
+
     public function subtractBalance(string $userid, string $amount, bool $hold = false)
     {
         try {
@@ -50,7 +59,7 @@ class BalanceService
                 ];
             }
 
-            $id = substr(sha1(date("Y-m-d H:i:s")),0,10);
+            $id = substr(uniqid().date("sihdmY"),6,10);
             DB::beginTransaction();
             $createTransaction = $this->balanceRepo->create([
                 'uniqueId' => $id,
